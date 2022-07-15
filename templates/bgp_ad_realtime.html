@@ -1,0 +1,172 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <!-- Real-time detection section -->
+    <section id="ad_realTime">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h3>{{ header1 }}</h3>
+                </div>
+            </div>
+
+            <!-- Introduction -->
+            <div class="row">
+                <div class="col-md-10 offset-md-1 text-left">
+                    <p>Real-time data retrieving and detection using the update messages collected by
+                        RIPE or Route Views and detection using pre-trained VFBLS models.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- EChart section for RIPE and Route Views -->
+    <section id="echart_ripe">
+        <div class="container">
+
+            <!-- Display current time -->
+            <div class="row">
+                <div class="col-md-10 offset-md-1 text-center">
+                    <p class="lead"><i class="far fa-clock" style="margin-right:3px;"></i>
+                        Local Time: <span id="MyClockDisplay" class="clock_digital"
+                                          style="margin-left:5px;"
+                                          onload="showTime()"></span>
+                        | <span id="current_date"></span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-10 offset-md-1">
+                    <!-- Select parameters -->
+                    <p class="lead">Retrieving and classifying BGP routing records</p>
+
+                    <div class="form-row">
+                        <label class="col-form-label col-md-3 pt-0 font-italic">Select a collection site:</label>
+                        <div class="col-md-9">
+                            <div class="form-check form-check-inline">
+                                <!-- radio type is for selecting one option from many -->
+                                <input class="form-check-input label-to-bold-if-checked" type="radio"
+                                       id="select_ripe" name="site_choice" value="ripe" checked disabled>
+                                <label class="form-check-label label-check" for="select_ripe">
+                                    RIPE
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input label-to-bold-if-checked" type="radio"
+                                       id="select_routeviews" name="site_choice" value="routeviews" disabled>
+                                <label class="form-check-label label-check" for="select_routeviews">
+                                    Route Views
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="col-form-label col-md-3 pt-0 font-italic">Data collector:</label>
+                        <div class="col-md-9">
+                            <p>rrc04 located at CIXP, Geneva</p>
+                        </div>
+                    </div>
+
+                    <!-- Buttons for connection and disconnection mr-3: margin-right-->
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <button id="btn_connect" type="submit" class="btn btn-primary btn-block">
+                                Connect
+                            </button>
+                        </div>
+
+                        <div class="col-md-2 offset-md-4">
+                            <span class="d-inline-block"
+                                  data-toggle="popover" data-trigger="hover" data-content="Pause the real-time task">
+                                <form id="form_disconnect" method="POST" action="#">
+                                    <!-- Disable code for btn: style="pointer-events: none;" disabled -->
+                                    <button id="btn_disconnect" type="submit" class="btn btn-secondary btn-block"
+                                            formmethod="POST"
+                                    >Disconnect
+                                    </button>
+                                </form>
+                            </span>
+                        </div>
+                    </div>
+                    <br>
+
+                    <!-- Display results -->
+                    <div class="text-center">
+                        <p>Coordinated Universal Time (UTC) when processing: <span id="t_utc"></span>
+                        </p>
+                    </div>
+
+                    <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+
+                    <div class="row">
+                        <div class="col-md-6 offset-md-0 text-left">
+                            <p class="lead">Results for the past five minutes:</p>
+                            <!-- placeholder: Results for the 1st minute... -->
+                            <span id="results0_p"></span>
+                            <br>
+                            <span id="results1_p"></span>
+                            <br>
+                            <span id="results2_p"></span>
+                            <br>
+                            <span id="results3_p"></span>
+                            <br>
+                            <span id="results4_p"></span>
+                            <br><br>
+                            <p class="lead">Total time spent:</p>
+                            <span id="results_total_time"></span>
+                            <!-- Emit data JS -->
+                            <script src="../static/js/data_emit_labels_5min.js"></script>
+                            <br>
+                        </div>
+
+                        <!-- EChart placeholder: pie -->
+                        <div id="echart_pie" class="col-md-5 offset-md-1" style="height:300px;"></div>
+                        <!-- Data direction: Server => user, EChart JS -->
+                        <script src="../static/js/echart_emit_pieStat.js"></script>
+                    </div>
+
+                    <hr style="height:0px;border:dotted rgba(128,128,128,0.42)">
+
+                    <!-- Dot animation -->
+                    <div class="d-flex align-items-center">
+                        <p><strong>Plotting predicted labels and processed features...</strong></p>
+                        <div class="spinner-grow spinner-grow-sm text-success ml-auto" role="status"
+                             aria-hidden="true"></div>
+                    </div>
+
+                    <!-- Show disconnect status when triggering the Disconnect btn -->
+                    <div class="row">
+                        <div class="col-md-12 text-right">
+                            <span id="log_disconnect"></span>
+                        </div>
+                    </div>
+
+                    <!-- EChart placeholder: results -->
+                    <div id="echart_labels" class="col-md-12"
+                         style="height:250px;border:1px solid #ddd;padding:10px;"></div>
+                    <!-- Data direction: Server => user, EChart JS -->
+                    <script src="../static/js/echart_emit_labels.js"></script>
+
+                    <!-- EChart placeholder: no. of announcements and withdrawals -->
+                    <div id="echart_features" class="col-md-12"
+                         style="height:500px;border:1px solid #ddd;padding:10px;"></div>
+                    <!-- Data direction: Server => user, EChart JS -->
+                    <script src="../static/js/echart_emit_features.js"></script>
+                    <br>
+
+                    <!-- EChart placeholder: cpu-->
+                    <div id="echart_cpu" class="col-md-12"
+                         style="height:220px;border:1px solid #ddd;padding:10px;"></div>
+                    <!-- Data direction: Server => user, EChart JS -->
+                    <script src="../static/js/echart_emit_cpu.js"></script>
+                </div>
+            </div>
+            <!-- <hr style="height:2px;border-width:0;color:gray;background-color:gray"> -->
+        </div>
+    </section>
+
+{% endblock %}
