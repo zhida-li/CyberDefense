@@ -31,6 +31,8 @@ The off-line classification is based on the specified start and end dates, times
 the anomalous event, partitioning of the training and test datasets, and 
 machine learning algorithms (GBDT, CNN, RNN, or [VFBLS](https://ieeexplore.ieee.org/document/9430511)).
 
+Terminal-based: https://github.com/zhida-li/BGPGuard-terminal-app
+
 ## About ModelOcean Subsystem
 **ModelOcean** enables processing various datasets such as NSL-KDD and CIC datasets to create models for various types of intrusion attacks such as DDoS, User to Root (U2R), Remote to Local (R2L), and probing. It has an additional module (data container) for custom datasets.
 
