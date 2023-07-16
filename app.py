@@ -15,14 +15,15 @@
 # ==============================================
 # main file: app.py
 # ==============================================
-# Last modified: Feb. 22, 2022
-# task: edit vfbls real-time
+# Last modified: June 24, 2023
+# task: updated offline experiment
 
 # Import the built-in libraries
 import os
 import sys
 import time
 import zipfile
+import glob
 
 # Import external libraries
 import numpy as np
@@ -83,19 +84,42 @@ def analyze_offline():
     if model_params == set(request.form.keys()):
         print("\n Server checked: Parameter received from the client :-) \n")
 
-        site_choice = request.form.get('site_choice')  # or use 'request.form['']' due to dict format
+        site = request.form.get('site_choice')  # or use 'request.form['']' due to dict format
+        site = 'RIPE' if site == 'ripe' else 'RouteViews'
+        start_date = request.form.get('start_date_key')
+        end_date = request.form.get('end_date_key')
+        start_date_anomaly = request.form.get('start_date_anomaly_key')
+        end_date_anomaly = request.form.get('end_date_anomaly_key')
+        start_time_anomaly = request.form.get('start_time_anomaly_key')
+        end_time_anomaly = request.form.get('end_time_anomaly_key')
+        cut_pct = request.form.get('cut_pct_key')
+        rnn_seq = request.form.get('rnn_seq_key')
 
+        input_exp_key = [site, start_date, end_date, start_date_anomaly, end_date_anomaly, start_time_anomaly,
+                         end_time_anomaly, cut_pct, rnn_seq]
         # Load the dict data for the front-end (off-line)
-        context_offLine = app_offline_classification(header_offLine, site_choice)
+        context_offLine = app_offline_classification(header_offLine, input_exp_key)
 
         time.sleep(5)  # to be changed
-        if not os.path.exists('./src/STAT/sample.zip'):
-            # zip results
-            zipObj = zipfile.ZipFile('./src/STAT/sample.zip', 'w')
-            zipObj.write('./src/STAT/train_test_stat.txt')
-            zipObj.write('./src/STAT/labels_RIPE.csv')
-            zipObj.write('./src/STAT/results_64_RIPE.csv')
-            zipObj.close()
+        print("--------------------Saving Results-begin--------------------------")
+        # if not os.path.exists('./src/STAT/results.zip'):
+        # zip results
+        zipObj = zipfile.ZipFile('./src/STAT/results.zip', 'w')
+        zipObj.write('./src/STAT/train_test_stat.txt')
+        # Use glob find the csv file with prefix "labels_"
+        for file in glob.glob('./src/STAT/labels_*.csv'):
+            zipObj.write(file)  # RIPE or Route Views
+        for file in glob.glob('./src/STAT/results_*.csv'):
+            zipObj.write(file)  # (* = cut_pct, site)
+        # zipObj.write('./src/STAT/labels_*.csv')
+        # zipObj.write('./src/STAT/results_*.csv')
+
+        # zipObj = zipfile.ZipFile('./src/STAT/sample.zip', 'w')  # for test Download function
+        # zipObj.write('./src/STAT/train_test_stat.txt')  # for test Download function
+        # zipObj.write('./src/STAT/labels_RIPE.csv')  # for test Download function
+        # zipObj.write('./src/STAT/results_64_RIPE.csv')  # for test Download function
+        zipObj.close()
+        print("--------------------Saving Results-end--------------------------")
 
         return render_template('bgp_ad_offline.html', **context_offLine)
         # return render_template('bgp_ad_offline.html', result_prediction=result_prediction)
@@ -107,7 +131,7 @@ def analyze_offline():
 @app.route('/download_file', methods=['GET'])
 def download_file():
     try:
-        return send_file('./src/STAT/sample.zip',
+        return send_file('./src/STAT/results.zip',
                          mimetype='application/zip',  # text/csv
                          attachment_filename='Results_%s.zip' % time.strftime('%b_%d_%Y_%H_%M_%S', time.localtime()),
                          as_attachment=True)
@@ -123,16 +147,22 @@ def contact():
 
 # WebSocket for Real-Time Detection  -begin
 @socketio.on('main_event', namespace='/test_conn')
-def test_connect():
+def test_connect(message):
+    mem = message.get('selected_option1')  # Get the selected option from the message
+    ALGO = message.get('selected_option2')  # Get the selected option from the message
+    print("Received feature option: ", mem)
+    print("Received algorithm option: ", ALGO)
     global thread
     with thread_lock:
         if thread is None:
-            thread = socketio.start_background_task(app_realtime_thread)
+            thread = socketio.start_background_task(app_realtime_thread, mem, ALGO)
 
 
-def app_realtime_thread():
+def app_realtime_thread(mem, ALGO):  # Add selected_option1 and selected_option2 as parameters
+    print("Running thread with feature option: ", mem)
+    print("Running thread with algorithm option: ", ALGO)
     count = 0
-    ALGO = 'VFBLS'
+    # ALGO = 'VFBLS'
     site = 'RIPE'
     if site == 'RIPE':
         time_interval = 5 * 60  # RIPE provides new update msg every 5 minutes
@@ -151,7 +181,7 @@ def app_realtime_thread():
 
         # === Load the data for the front-end (real-time) ===
         web_results, t_utc, t_ann, data_for_plot_ann, data_for_plot_wdrl, count, predicted_labels, \
-        t_cpu, cpus = app_realtime_detection(ALGO, site, count)
+            t_cpu, cpus = app_realtime_detection(ALGO, site, mem, count)
 
         # Show results
         # Emit uct date & time, predicted labels of 5min

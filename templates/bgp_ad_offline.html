@@ -1,6 +1,6 @@
 <!--
 author: Zhida Li
-last edit: Feb. 9, 2022
+last edit: June 24, 2023
 -->
 {% extends "layout.html" %}
 
@@ -103,12 +103,12 @@ last edit: Feb. 9, 2022
 
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label for="s_t_ano" class="font-italic">Start time for the anomalous event:</label>
+                                <label for="s_t_ano" class="font-italic">Start time (UTC) for the anomalous event:</label>
                                 <input type="text" class="form-control" id="s_t_ano"
                                        name="start_time_anomaly_key" placeholder="Format: HHMM. Example: 0400">
                             </div>
                             <div class="form-group col-md-6">
-                                <label for="e_t_ano" class="font-italic">End time for the anomalous event:</label>
+                                <label for="e_t_ano" class="font-italic">End time (UTC) for the anomalous event:</label>
                                 <input type="text" class="form-control" id="e_t_ano"
                                        name="end_time_anomaly_key" placeholder="HHMM. Example: 1159">
                             </div>
@@ -155,8 +155,8 @@ last edit: Feb. 9, 2022
 
                     {#                    <hr style="height:2px;border-width:0;color:gray;background-color:gray">#}
 
-                    <p>Collection site selected: {{ site_selected }}</p>
-                    <p>Prediction: {{ result_prediction }}</p>
+                    <p>Results: {{ site_selected }}</p>
+                    <p>Parameters: {{ result_prediction }}</p>
                 </div>
             </div>
 
@@ -169,7 +169,7 @@ last edit: Feb. 9, 2022
                     <form action="{{ url_for('download_file') }}" method="GET">
                         <span>
                             <button class="btn btn-primary"><i class="fa fa-file-download"></i> Download</button>
-                            Feature matrices, predicted labels
+                            results.zip: Classification results, labels, and train/test statistics
                         </span>
                     </form>
 
