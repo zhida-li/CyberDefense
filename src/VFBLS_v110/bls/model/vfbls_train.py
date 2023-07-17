@@ -61,7 +61,7 @@ def vfbls_train_realtime(train_x, train_y, test_x,
                          N1_bls_fsm1, N2_bls_fsm1, N1_bls_fsm2, N2_bls_fsm2,
                          add_nFeature1, add_nFeature2):
     """
-    Function that creates the VFBLS model
+    Function that creates the VFBLS model.
     :param train_x: entire training data
     :param train_y: entire training labels
     :param test_x: entire test data

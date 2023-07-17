@@ -1,6 +1,6 @@
 //author: Zhida Li
-// last modified: Feb. 22, 2022
-// task: enable disconnect btn
+// last modified: July 16, 2022
+// task: feature selection btn
 
 $(document).ready(function () {
     namespace = '/test_conn';
@@ -8,18 +8,42 @@ $(document).ready(function () {
     var socket = io(namespace);
     var selectedOption1 = null;  // This will hold the selected dropdown item
     var selectedOption2 = null;
+    var selectedOption3 = null;
 
     // Update selected option and button text when a dropdown item is clicked
     // For dropdown 1
     $('.dropdown-item1').click(function () {
         selectedOption1 = $(this).text();
         $('#dropdownButton1').text('Memory selected: ' + selectedOption1);
+        $('#dropdownButton1').css('background-color', '#28a745');
     });
 
-    // For dropdown 2
+// For dropdown 2
     $('.dropdown-item2').click(function () {
         selectedOption2 = $(this).text();
-        $('#dropdownButton2').text('Pre-trained model selected: ' + selectedOption2);
+
+        if (selectedOption2 === 'GRU (GPU only)') {
+            $('#dropdownButton2').text('ML model selected: ' + selectedOption2);
+        } else {
+            $('#dropdownButton2').text('Machine learning model selected: ' + selectedOption2);
+        }
+
+        $('#dropdownButton2').css('background-color', '#28a745');
+
+        // Disable the "Number of most important features" dropdown if VFBLS or GRU is selected
+        if (selectedOption2 === 'VFBLS' || selectedOption2 === 'GRU') {
+            $('#dropdownButton3').prop('disabled', true);
+        } else {
+            $('#dropdownButton3').prop('disabled', false);
+        }
+    });
+
+
+    // for dropdown 3
+    $('.dropdown-item3').click(function () {
+        selectedOption3 = $(this).text();
+        $('#dropdownButton3').text('Number of most important features selected: ' + selectedOption3);
+        $('#dropdownButton3').css('background-color', '#28a745');
     });
 
     // Emit selected option when "Connect" button is clicked
@@ -31,7 +55,8 @@ $(document).ready(function () {
     $('#btn_connect').click(function () {
         let data = {
             'selected_option1': selectedOption1,
-            'selected_option2': selectedOption2
+            'selected_option2': selectedOption2,
+            'selected_option3': selectedOption3
         };
         socket.emit('main_event', data);
     });

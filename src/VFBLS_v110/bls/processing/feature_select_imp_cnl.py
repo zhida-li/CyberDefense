@@ -12,7 +12,7 @@ from scipy.stats import zscore
 
 
 def feature_select_imp_cnl(data, label, top_f_features):
-    np.random.seed(1);
+    # np.random.seed(1);
     model = ExtraTreesClassifier(n_estimators=100, random_state=1)
     label = np.ravel(label)
     model.fit(data, label)

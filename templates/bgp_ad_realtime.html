@@ -13,10 +13,8 @@
             <!-- Introduction -->
             <div class="row">
                 <div class="col-md-10 offset-md-1 text-left">
-                    <p>Real-time data retrieving and detection using the update messages collected by
-                        RIPE or Route Views and detection.
-                        {#                        using pre-trained VFBLS models.#}
-                    </p>
+                    <p>Real-time data retrieval and anomaly detection using the update messages collected by
+                        RIPE or Route Views.</p>
                 </div>
             </div>
 
@@ -75,7 +73,7 @@
                     <div class="form-row">
                         <div class="col-md-3 mb-3"> <!-- Add this div with class 'mb-3' to add margin-bottom -->
                             <div class="dropdown custom-dropdown">
-                                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button"
+                                <button class="btn btn-secondary btn-no-border btn-sm dropdown-toggle custom-font-size" type="button"
                                         id="dropdownButton1"
                                         data-toggle="dropdown"
                                         aria-expanded="false">
@@ -90,18 +88,54 @@
 
                         <div class="col-md-3 mb-3"> <!-- Add this div with class 'mb-3' to add margin-bottom -->
                             <div class="dropdown custom-dropdown">
-                                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button"
+                                <button class="btn btn-secondary btn-no-border btn-sm dropdown-toggle custom-font-size" type="button"
                                         id="dropdownButton2"
                                         data-toggle="dropdown"
                                         aria-expanded="false">
-                                    Pre-trained model selection:
+                                    Machine learning model selection:
                                 </button>
                                 <div class="dropdown-menu">
                                     <a class="dropdown-item dropdown-item2" href="#">VFBLS</a>
+                                    <a class="dropdown-item dropdown-item2" href="#">BLS</a>
                                     <a class="dropdown-item dropdown-item2" href="#">GRU</a>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="col-1"></div> <!-- This will act as a spacer -->
+
+                        <div class="col-md-3 mb-3"> <!-- Add this div with class 'mb-3' to add margin-bottom -->
+                            <div class="dropdown custom-dropdown">
+                                <button class="btn btn-secondary btn-no-border btn-sm dropdown-toggle custom-font-size" type="button"
+                                        id="dropdownButton3"
+                                        data-toggle="dropdown"
+                                        aria-expanded="false">
+                                    Number of most important features:
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item dropdown-item3" href="#">2</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">4</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">6</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">8</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">10</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">12</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">14</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">16</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">18</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">20</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">22</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">24</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">26</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">28</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">30</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">32</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">34</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">36</a>
+                                    <a class="dropdown-item dropdown-item3" href="#">all</a>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <br>

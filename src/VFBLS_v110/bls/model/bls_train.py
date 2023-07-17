@@ -16,20 +16,25 @@
     (http://www.broadlearning.ai/).
 """
 
-######################################################
-####### BLS
-######################################################
+# ==============================================
+# BLS real-time detection module
+# ==============================================
+# Last modified: July 16, 2023
 
 # Import the Python libraries
+import os
+import sys
 import time
 import random
-import numpy as np
-import sys
+import math
 
+# Import external libraries
+import numpy as np
 from scipy.stats import zscore
 from scipy.linalg import orth
-from numpy.linalg import pinv
+from numpy.linalg import inv
 
+# Import customized libraries
 # sys.path.append("..")
 from bls.processing.result import result
 from bls.processing.sparse_bls import sparse_bls
@@ -40,25 +45,25 @@ from bls.processing.mapminmax import mapminmax
 from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
 
-"""
-    Function that creates the BLS model. It returns the training and test accuracy, training and
-    testing time, and testing F-Score.
-        bls_train_fscore(train_x, train_y, test_x, test_y, s, C, N1, N2, N3)
-        'train_x' and 'test_x' are the entire training data and test data.
-        'train_y' and 'test_y' are the entire training labels and test labels.
-        's' is the shrinkage parameter for enhancement nodes.
-        'C' is the parameter for sparse regularization.
-        'N1' is the number of mapped feature nodes.
-        'N2' are the groups of mapped features.
-        'N3' is the number of enhancement nodes.
 
-    Randomoly generated weights for the mapped features and enhancement nodes are
-    stored in the
-    matrices 'we' and 'wh,' respectively.
-"""
+def bls_train_realtime(train_x, train_y, test_x,
+                       s, C,
+                       N1, N2, N3):
+    """
+    Function that creates the BLS model.
+    :param train_x: entire training data
+    :param train_y: entire training labels
+    :param test_x: entire test data
+    :param s: shrinkage parameter for enhancement nodes
+    :param C: parameter for sparse regularization
+    :param N1: number of mapped feature nodes
+    :param N2: groups of mapped features
+    :param N3: number of enhancement nodes
+    :return: TrainingAccuracy, Training_time, Testing_time, predicted labels
 
-
-def bls_train_fscore_online(train_x, train_y, test_x, s, C, N1, N2, N3):
+    Randomly generated weights for the mapped features and enhancement nodes are
+    stored in the matrices 'we' and 'wh,' respectively.
+    """
     # Training - begin
     time_start = time.time()
     beta11 = [];
@@ -127,8 +132,9 @@ def bls_train_fscore_online(train_x, train_y, test_x, s, C, N1, N2, N3):
     del T2;
 
     # Moore-Penrose pseudoinverse (function pinv)
-    beta = np.dot(pinv(np.dot(T3.transpose(), T3) + np.identity(T3.transpose().shape[0]) * C),
+    beta = np.dot(inv(np.dot(T3.transpose(), T3) + np.identity(T3.transpose().shape[0]) * C),
                   np.dot(T3.transpose(), train_y));
+    # beta = np.dot(pinv(T3), train_y)
 
     xx = np.dot(T3, beta);
 
@@ -143,6 +149,8 @@ def bls_train_fscore_online(train_x, train_y, test_x, s, C, N1, N2, N3):
     print("The Total Training Time is : ", Training_time, " seconds");
 
     ### Training Accuracy
+    print("xx.shape", xx.shape)
+    print("xx", xx)
     yy = result(xx);
     train_yy = result(train_y);
 
@@ -205,10 +213,8 @@ def bls_train_fscore_online(train_x, train_y, test_x, s, C, N1, N2, N3):
     print("The Total Testing Time is : ", Testing_time, " seconds");
 
     ### Testing accuracy
-    y = result(x);
+    y = result(x)
+    predicted = y
 
-    predicted = y;
-
-    del TT3;
-
-    return TrainingAccuracy, Training_time, Testing_time, predicted;
+    del TT3
+    return TrainingAccuracy, Training_time, Testing_time, predicted

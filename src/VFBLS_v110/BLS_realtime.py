@@ -31,16 +31,17 @@ from scipy.stats import zscore
 # Import customized libraries
 sys.path.append('./src/VFBLS_v110')
 from bls.processing.replaceNan import replaceNan
-from bls.model.vfbls_train import vfbls_train_realtime
+from bls.model.bls_train import bls_train_realtime
 from bls.model.vfbls_test import vfbls_test_realtime
 
-
+from bls.processing.feature_select_imp_cnl import feature_select_imp_cnl
+from bls.processing.one_hot_m import one_hot_m
 # import warnings
 # warnings.filterwarnings("ignore", category=FutureWarning)
 
 
 # ====== For training/testing ======
-def vfbls_demo_train_test():
+def bls_demo_train_test(num_features='all', mem='low'):
     # Disable
     def blockPrint():
         sys.stdout = open(os.devnull, 'w')
@@ -66,7 +67,8 @@ def vfbls_demo_train_test():
 
     # Combine training data
     train_dataset_list = [train_dataset1, train_dataset2, train_dataset3,
-                          train_dataset4, train_dataset5, train_dataset6]
+                          # train_dataset4,
+                          train_dataset5, train_dataset6]
     train_dataset = train_dataset0
     for train_data in train_dataset_list:
         train_dataset = np.concatenate((train_dataset, train_data), axis=0)
@@ -94,7 +96,15 @@ def vfbls_demo_train_test():
     # inds2 = np.where(test_y == 0);
     # test_y[inds2] = 2;
 
-    # VFBLS parameters
+    # feature selection - begin
+    if num_features != 'all':
+        num_features = int(num_features)
+        features, _ = feature_select_imp_cnl(train_x, train_y, num_features)
+        train_x = train_x[:, features]
+        test_x = test_x[:, features]
+    # feature selection - end
+
+    # BLS parameters
     seed = 1  # set the seed for generating random numbers
     num_class = 2  # number of the classes
     epochs = 1  # number of epochs
@@ -102,53 +112,53 @@ def vfbls_demo_train_test():
     C = 2 ** -15  # parameter for sparse regularization
     s = 0.6  # the shrinkage parameter for enhancement nodes
 
+    train_y = one_hot_m(train_y, num_class)
+    # test_y = one_hot_m(test_y, num_class);
     #######################
     # N1* - the number of mapped feature nodes
     # N2* - the groups of mapped features
     # N3* - the number of enhancement nodes
-
-    N1_bls_fsm = 100
-    N2_bls_fsm = 10
-    N3_bls_fsm = 100
-
-    N1_bls_fsm1 = 30
-    N2_bls_fsm1 = 10
-
-    N1_bls_fsm2 = 30
-    N2_bls_fsm2 = 10
-
-    add_nFeature1 = 16
-    add_nFeature2 = 8
+    if mem == 'low':
+        N1_bls = 20
+        N2_bls = 5
+        N3_bls = 100
+    else:
+        N1_bls = 200
+        N2_bls = 10
+        N3_bls = 100
     #######################
 
     train_err = np.zeros((1, epochs))
     train_time = np.zeros((1, epochs))
     test_time = np.zeros((1, epochs))
 
-    # VFBLS ----------------------------------------------------------------
-    print("======================= VFBLS =======================\n")
-    np.random.seed(seed)  # set the seed for generating random numbers
-    for j in range(0, epochs):
-        trainingAccuracy, trainingTime, testingTime, predicted \
-            = vfbls_train_realtime(train_x, train_y, test_x,
-                                   s, C,
-                                   N1_bls_fsm, N2_bls_fsm, N3_bls_fsm,
-                                   N1_bls_fsm1, N2_bls_fsm1, N1_bls_fsm2, N2_bls_fsm2,
-                                   add_nFeature1, add_nFeature2)
-
-        train_err[0, j] = trainingAccuracy * 100
-        train_time[0, j] = trainingTime
-        test_time[0, j] = testingTime
-
-    # print("======================= BLS =======================\n")
+    # # VFBLS ----------------------------------------------------------------
+    # print("======================= VFBLS =======================\n")
     # np.random.seed(seed)  # set the seed for generating random numbers
     # for j in range(0, epochs):
-    #     TrainingAccuracy, Training_time, Testing_time, predicted = \
-    #         bls_train_fscore_online(train_x, train_y, test_x, s, C, N1_bls, N2_bls, N3_bls)
+    #     trainingAccuracy, trainingTime, testingTime, predicted \
+    #         = vfbls_train_realtime(train_x, train_y, test_x,
+    #                                s, C,
+    #                                N1_bls_fsm, N2_bls_fsm, N3_bls_fsm,
+    #                                N1_bls_fsm1, N2_bls_fsm1, N1_bls_fsm2, N2_bls_fsm2,
+    #                                add_nFeature1, add_nFeature2)
     #
     #     train_err[0, j] = trainingAccuracy * 100
     #     train_time[0, j] = trainingTime
     #     test_time[0, j] = testingTime
+
+    # BLS ----------------------------------------------------------------
+    print("======================= BLS =======================\n")
+    np.random.seed(seed)  # set the seed for generating random numbers
+    for j in range(0, epochs):
+        trainingAccuracy, trainingTime, testingTime, predicted = \
+            bls_train_realtime(train_x, train_y, test_x,
+                                s, C,
+                                N1_bls, N2_bls, N3_bls)
+
+        train_err[0, j] = trainingAccuracy * 100
+        train_time[0, j] = trainingTime
+        test_time[0, j] = testingTime
 
     enablePrint()
     # print("trn acc:", trainingAccuracy)
@@ -182,8 +192,8 @@ def vfbls_demo_train_test():
     return predicted_list, test_hour_chart, test_min_chart, web_results
 
 
-# ====== For testing only ======
-def vfbls_demo(mem='low'):
+# ====== For testing only, used vfbls module======
+def bls_demo(num_features='all', mem='low'):
     # Disable
     def blockPrint():
         sys.stdout = open(os.devnull, 'w')
@@ -195,9 +205,10 @@ def vfbls_demo(mem='low'):
     blockPrint()
 
     # Load the datasets
-    path_app = 'src'
+    path_app = "src"
     test_dataset = np.loadtxt('./%s/data_test/DUMP_out.txt' % path_app)
 
+    num_features = num_features
     # new process test data #
     test_x = test_dataset[:, 4:]
 

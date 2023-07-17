@@ -149,20 +149,29 @@ def contact():
 @socketio.on('main_event', namespace='/test_conn')
 def test_connect(message):
     mem = message.get('selected_option1')  # Get the selected option from the message
-    ALGO = message.get('selected_option2')  # Get the selected option from the message
+    ALGO = message.get('selected_option2')
+    num_features = message.get('selected_option3')
     print("Received feature option: ", mem)
     print("Received algorithm option: ", ALGO)
+    print("Received no. of features option: ", num_features)
     global thread
     with thread_lock:
         if thread is None:
-            thread = socketio.start_background_task(app_realtime_thread, mem, ALGO)
+            thread = socketio.start_background_task(app_realtime_thread, mem, ALGO, num_features)
 
 
-def app_realtime_thread(mem, ALGO):  # Add selected_option1 and selected_option2 as parameters
+def app_realtime_thread(mem, ALGO, num_features):
     print("Running thread with feature option: ", mem)
     print("Running thread with algorithm option: ", ALGO)
-    count = 0
-    # ALGO = 'VFBLS'
+    print("Running thread with no. of features option: ", num_features)
+    if mem is None:
+        mem = 'low'  # default memory
+    if ALGO is None:
+        ALGO = 'VFBLS'  # default algorithm
+    if num_features is None:
+        num_features = 'all'  # default no. of features
+
+    count = 0  # count the number of received update messages
     site = 'RIPE'
     if site == 'RIPE':
         time_interval = 5 * 60  # RIPE provides new update msg every 5 minutes
@@ -181,7 +190,7 @@ def app_realtime_thread(mem, ALGO):  # Add selected_option1 and selected_option2
 
         # === Load the data for the front-end (real-time) ===
         web_results, t_utc, t_ann, data_for_plot_ann, data_for_plot_wdrl, count, predicted_labels, \
-            t_cpu, cpus = app_realtime_detection(ALGO, site, mem, count)
+            t_cpu, cpus = app_realtime_detection(ALGO, num_features, site, mem, count)
 
         # Show results
         # Emit uct date & time, predicted labels of 5min

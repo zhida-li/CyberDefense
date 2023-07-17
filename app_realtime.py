@@ -35,11 +35,17 @@ from src.time_tracker import time_tracker_single
 
 # sys.path.append('./src/VFBLS_v110')
 from src.VFBLS_v110.VFBLS_realtime import vfbls_demo
+from src.VFBLS_v110.VFBLS_realtime import vfbls_demo_train_test
+from src.VFBLS_v110.BLS_realtime import bls_demo_train_test
+
+import torch
+from src.modelOcean.gru_2layer_demo import gru2_demo
 
 
-def app_realtime_detection(ALGO='VFBLS', site='RIPE', mem='low', count=0):
+def app_realtime_detection(ALGO='VFBLS', num_features='all', site='RIPE', mem='low', count=0):
     """
     :param ALGO: algorithm
+    :param num_features: number of selected features
     :param site:  collection site
     :param mem: low memory or high memory
     :param count: no. of the real-time detection
@@ -57,13 +63,22 @@ def app_realtime_detection(ALGO='VFBLS', site='RIPE', mem='low', count=0):
     if ALGO == 'VFBLS':
         # VFBLS
         predicted_labels, test_hour_chart, test_min_chart, web_results = vfbls_demo(mem)
+        # predicted_labels, test_hour_chart, test_min_chart, web_results = vfbls_demo_train_test()
         # print("predicted", predicted_labels)  # type: [2.0, 1.0, ...]
         # print("test_hour", test_hour_chart)  # type: ['01', '01', ...]
         # print("web_results", web_results)
+    elif ALGO == 'BLS':
+        # BLS
+        predicted_labels, test_hour_chart, test_min_chart, web_results = bls_demo_train_test(num_features, mem)
     elif ALGO == 'GRU':
         # GRU
-        # gru2_demo()
-        print("Please re-enter.")
+        if torch.cuda.is_available():
+            predicted_labels, test_hour_chart, test_min_chart, web_results = gru2_demo()
+        else:
+            predicted_labels, test_hour_chart, test_min_chart, web_results = vfbls_demo(mem)
+            print("No GPU available, use VFBLS instead.")
+    else:
+        print("Invalid algorithm. Please re-enter.")
         exit()
 
     t_utc = time.strftime('%a, %d %b %Y %H:%M:%S', time.gmtime())
