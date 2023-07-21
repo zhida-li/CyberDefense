@@ -25,14 +25,13 @@
     <section id="echart_ripe">
         <div class="container">
 
-            <!-- Display current time -->
             <div class="row">
                 <div class="col-md-10 offset-md-1 text-center">
                     <p class="lead"><i class="far fa-clock" style="margin-right:3px;"></i>
-                        Local Time: <span id="MyClockDisplay" class="clock_digital"
+                        Local Time: <span id="MyClockDisplay" class="clock_digital transition"
                                           style="margin-left:5px;"
                                           onload="showTime()"></span>
-                        | <span id="current_date"></span>
+                        | <span id="current_date" class="transition"></span>
                     </p>
                 </div>
             </div>
@@ -73,31 +72,33 @@
                     <div class="form-row">
                         <div class="col-md-3 mb-3"> <!-- Add this div with class 'mb-3' to add margin-bottom -->
                             <div class="dropdown custom-dropdown">
-                                <button class="btn btn-secondary btn-no-border btn-sm dropdown-toggle custom-font-size" type="button"
+                                <button class="btn btn-secondary btn-no-border btn-sm dropdown-toggle custom-font-size"
+                                        type="button"
                                         id="dropdownButton1"
                                         data-toggle="dropdown"
                                         aria-expanded="false">
                                     Memory specification:
                                 </button>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item dropdown-item1" href="#">low</a>
-                                    <a class="dropdown-item dropdown-item1" href="#">high</a>
+                                    <a class="dropdown-item dropdown-item1">low</a>
+                                    <a class="dropdown-item dropdown-item1">high</a>
                                 </div>
                             </div>
                         </div>
 
                         <div class="col-md-3 mb-3"> <!-- Add this div with class 'mb-3' to add margin-bottom -->
                             <div class="dropdown custom-dropdown">
-                                <button class="btn btn-secondary btn-no-border btn-sm dropdown-toggle custom-font-size" type="button"
+                                <button class="btn btn-secondary btn-no-border btn-sm dropdown-toggle custom-font-size"
+                                        type="button"
                                         id="dropdownButton2"
                                         data-toggle="dropdown"
                                         aria-expanded="false">
                                     Machine learning model selection:
                                 </button>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item dropdown-item2" href="#">VFBLS</a>
-                                    <a class="dropdown-item dropdown-item2" href="#">BLS</a>
-                                    <a class="dropdown-item dropdown-item2" href="#">GRU</a>
+                                    <a class="dropdown-item dropdown-item2">VFBLS</a>
+                                    <a class="dropdown-item dropdown-item2" href="#echart_ripe">BLS</a>
+                                    <a class="dropdown-item dropdown-item2">GRU</a>
                                 </div>
                             </div>
                         </div>
@@ -106,32 +107,33 @@
 
                         <div class="col-md-3 mb-3"> <!-- Add this div with class 'mb-3' to add margin-bottom -->
                             <div class="dropdown custom-dropdown">
-                                <button class="btn btn-secondary btn-no-border btn-sm dropdown-toggle custom-font-size" type="button"
+                                <button class="btn btn-secondary btn-no-border btn-sm dropdown-toggle custom-font-size"
+                                        type="button"
                                         id="dropdownButton3"
                                         data-toggle="dropdown"
                                         aria-expanded="false">
                                     Number of most important features:
                                 </button>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item dropdown-item3" href="#">2</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">4</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">6</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">8</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">10</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">12</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">14</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">16</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">18</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">20</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">22</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">24</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">26</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">28</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">30</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">32</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">34</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">36</a>
-                                    <a class="dropdown-item dropdown-item3" href="#">all</a>
+                                    <a class="dropdown-item dropdown-item3">2</a>
+                                    <a class="dropdown-item dropdown-item3">4</a>
+                                    <a class="dropdown-item dropdown-item3">6</a>
+                                    <a class="dropdown-item dropdown-item3">8</a>
+                                    <a class="dropdown-item dropdown-item3">10</a>
+                                    <a class="dropdown-item dropdown-item3">12</a>
+                                    <a class="dropdown-item dropdown-item3">14</a>
+                                    <a class="dropdown-item dropdown-item3">16</a>
+                                    <a class="dropdown-item dropdown-item3">18</a>
+                                    <a class="dropdown-item dropdown-item3">20</a>
+                                    <a class="dropdown-item dropdown-item3">22</a>
+                                    <a class="dropdown-item dropdown-item3">24</a>
+                                    <a class="dropdown-item dropdown-item3">26</a>
+                                    <a class="dropdown-item dropdown-item3">28</a>
+                                    <a class="dropdown-item dropdown-item3">30</a>
+                                    <a class="dropdown-item dropdown-item3">32</a>
+                                    <a class="dropdown-item dropdown-item3">34</a>
+                                    <a class="dropdown-item dropdown-item3">36</a>
+                                    <a class="dropdown-item dropdown-item3">all</a>
                                 </div>
                             </div>
                         </div>

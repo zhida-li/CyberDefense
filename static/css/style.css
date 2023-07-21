@@ -314,6 +314,15 @@ footer ul li {
     /*color: #1e88e5;*/
 }
 
+/* "Local Time" animation*/
+.transition {
+    transition: color 1s ease-in-out;
+}
+
+.transition:hover {
+    color: #ee0202 !important;;
+}
+
 /* disconnect button background color */
 #btn_disconnect {
     background: #6c757d;
@@ -357,16 +366,15 @@ footer ul li {
     font-size: 150%;
 }
 
+/*slider*/
+.slider {
+    width: 85%;
+}
+
 /* submit button padding */
 #btn_submit {
     width: 50%;
     /* TopBottom leftRight */
     /*padding: 10px 200px;*/
 }
-
-/* reset button background color */
-#btn_reset {
-    background: #6c757d;
-}
-
 

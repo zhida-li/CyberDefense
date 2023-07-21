@@ -18,7 +18,7 @@ $(document).ready(function () {
         $('#dropdownButton1').css('background-color', '#28a745');
     });
 
-// For dropdown 2
+    // For dropdown 2
     $('.dropdown-item2').click(function () {
         selectedOption2 = $(this).text();
 
@@ -37,7 +37,6 @@ $(document).ready(function () {
             $('#dropdownButton3').prop('disabled', false);
         }
     });
-
 
     // for dropdown 3
     $('.dropdown-item3').click(function () {
@@ -76,7 +75,8 @@ $(document).ready(function () {
         $('#log_disconnect').append($('<span/>').text('Server received' + ': ' + msg.data).html());
         if (cb)
             cb();
-    });
+    }); // end of disconnect_response
+
 
     // var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
     socket.on('server_response_text', function (res) {
@@ -87,6 +87,18 @@ $(document).ready(function () {
         //document.getElementById("t1_num").innerHTML = t1; // both methods are fine
         var results_text0 = res.data_results[0];
         $('#results0_p').text(results_text0);
+
+        // Flash the "Local Time" on webpage "Real-Time BGP Anomaly Detection" when "results0_p" is received
+        $("#MyClockDisplay").css('color', 'red').animate({
+            opacity: 0
+        }, 200, function () {
+            $(this).animate({
+                opacity: 1
+            }, 200);
+        }).delay(500).queue(function (next) {
+            $(this).css('color', 'black');
+            next();
+        });
 
         var results_text1 = res.data_results[1];
         $('#results1_p').text(results_text1);
@@ -99,5 +111,7 @@ $(document).ready(function () {
 
         var results_text4 = res.data_results[4];
         $('#results4_p').text(results_text4);
+
     });
+
 });

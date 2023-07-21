@@ -35,10 +35,10 @@ last edit: June 24, 2023
             <div class="row">
                 <div class="col-md-10 offset-md-1 text-center">
                     <p class="lead"><i class="far fa-clock" style="margin-right:3px;"></i>
-                        Local Time: <span id="MyClockDisplay" class="clock_digital"
+                        Local Time: <span id="MyClockDisplay" class="clock_digital transition"
                                           style="margin-left:5px;"
                                           onload="showTime()"></span>
-                        | <span id="current_date"></span>
+                        | <span id="current_date" class="transition"></span>
                     </p>
                 </div>
             </div>
@@ -103,7 +103,8 @@ last edit: June 24, 2023
 
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label for="s_t_ano" class="font-italic">Start time (UTC) for the anomalous event:</label>
+                                <label for="s_t_ano" class="font-italic">Start time (UTC) for the anomalous
+                                    event:</label>
                                 <input type="text" class="form-control" id="s_t_ano"
                                        name="start_time_anomaly_key" placeholder="Format: HHMM. Example: 0400">
                             </div>
@@ -113,29 +114,52 @@ last edit: June 24, 2023
                                        name="end_time_anomaly_key" placeholder="HHMM. Example: 1159">
                             </div>
                         </div>
+                        <!-- date & time pickers JS -->
+                        <script src="../static/js/dateTimePicker.js"></script>
 
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label for="cut_percentage" class="font-italic">Partition percentage (train &
-                                    test):</label>
-                                <input type="text" class="form-control" id="cut_percentage"
-                                       name="cut_pct_key" placeholder="Format: Two integers; sum is 10. Example: 64">
+                                <label for="cut_percentage" class="font-italic">Data partition based on the percentage
+                                    of anomalous data:</label>
+                                <div id="percentage">
+                                    <span id="train-percentage">60</span>% Training / <span
+                                        id="test-percentage">40</span>% Testing
+                                </div>
+                                <!-- max="9" is for 90%, avoid to have max="10" 100% for training -->
+                                <input type="range" min="1" max="9" value="6" class="slider" id="cut_percentage">
+                                <!-- This hidden input field will hold the value that gets submitted -->
+                                <input type="hidden" id="cut_percentage_hidden" name="cut_pct_key">
                             </div>
                         </div>
 
                         <div class="form-row">
-                            <div class="form-group col-md-6">
+                            <div class="col-md-6 mb-3">
                                 <label for="rnn_seq_len" class="font-italic">Sequence length for RNN algorithms if
                                     needed:</label>
-                                <input type="text" class="form-control" id="rnn_seq_len"
-                                       name="rnn_seq_key" placeholder="Format: Integer divisible by 10. Example: 20">
+                                <div class="dropdown custom-dropdown">
+                                    <button class="btn btn-secondary btn-no-border btn-sm dropdown-toggle custom-font-size"
+                                            type="button" id="dropdownButton4" data-toggle="dropdown"
+                                            aria-expanded="false">
+                                        Sequence length selection:
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownButton4">
+                                        <a class="dropdown-item dropdown-item4" href="#offLine_ripe">5</a>
+                                        <a class="dropdown-item dropdown-item4" href="#offLine_ripe">10</a>
+                                        <a class="dropdown-item dropdown-item4" href="#offLine_ripe">20</a>
+                                    </div>
+                                </div>
+                                <!-- This hidden input field will hold the value that gets submitted -->
+                                <input type="hidden" id="rnn_seq_hidden" name="rnn_seq_key">
                             </div>
                         </div>
 
                         <!-- Buttons for submit and reset -->
                         <div class="btn-toolbar">
                             <button id="btn_submit" type="submit" class="btn btn-primary mr-3">Submit</button>
-                            <button id="btn_reset" type="reset" class="btn btn-secondary">Reset</button>
+                            <button id="btn_reset" type="reset" class="btn btn-secondary" style="background: #6c757d"
+                                    data-toggle="popover" data-trigger="hover" data-content="Reset the date/time/hyper-parameters">
+                                Reset
+                            </button>
                         </div>
                         <br>
 
@@ -150,7 +174,8 @@ last edit: June 24, 2023
                                 </div>
                             </div>
                         </div>
-
+                        <!-- POST data JS -->
+                        <script src="../static/js/data_offline_post.js"></script>
                     </form>
 
                     {#                    <hr style="height:2px;border-width:0;color:gray;background-color:gray">#}
