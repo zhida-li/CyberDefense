@@ -261,6 +261,16 @@ def test_disconnect():
 # WebSocket for Real-Time Detection  -end
 
 
+# Data Clustering GET (route)
+@app.route('/data_clustering', methods=['GET'])
+def get_data_clustering():
+    return render_template('data_clustering.html', header2="Data Clustering")
+
+# # Data Clustering POST (route)
+@app.route('/data_clustering', methods=['POST'])
+def post_data_clustering():
+    print('Dict. params. received from the front-end: \n', request.form)  # check if receive keys (name) from front-end
+    return render_template('data_clustering.html', header2=str(request.form))
 """
 ## Launch app
 """

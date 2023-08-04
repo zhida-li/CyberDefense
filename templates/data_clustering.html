@@ -1,0 +1,141 @@
+<!--
+author: 
+-->
+{% extends "layout.html" %}
+
+{% block content %}
+    <!-- Off-line classification section -->
+    <section id="ad_offLine">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h3>{{ header2 }}</h3>
+                </div>
+            </div>
+
+            <!-- Introduction -->
+            <div class="row">
+                <div class="col-md-10 offset-md-1 text-left">
+                    <p>Customizing off-line experiments by specifying the collection site,
+                        start and end dates and times of the anomalous event,
+                        partitioning the training and test datasets,
+                        and the choice of the RNN or VFBLS algorithm.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Parameter selection section for RIPE and Route Views -->
+    <section id="offLine_ripe">
+        <div class="container">
+
+            <!-- Display current time -->
+            <div class="row">
+                <div class="col-md-10 offset-md-1 text-center">
+                    <p class="lead"><i class="far fa-clock" style="margin-right:3px;"></i>
+                        Local Time: <span id="MyClockDisplay" class="clock_digital transition"
+                                          style="margin-left:5px;"
+                                          onload="showTime()"></span>
+                        | <span id="current_date" class="transition"></span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-10 offset-md-1">
+                    <!-- Select parameters -->
+                    <p class="lead">Parameter Selections</p>
+
+                    <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+
+                    <!-- Forms -->
+                    <form action="{{ url_for('post_data_clustering') }}" method="POST">
+
+                        <div class="form-row">
+                            <label class="col-form-label col-md-3 pt-0 font-italic">Select a collection site:</label>
+                            <div class="col-md-9">
+                                <div class="form-check form-check-inline">
+                                    <!-- radio type is for selecting one option from many -->
+                                    <input class="form-check-input label-to-bold-if-checked" type="radio"
+                                           id="select_ripe" name="site_choice" value="ripe" checked>
+                                    <label class="form-check-label label-check" for="select_ripe">
+                                        RIPE
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input label-to-bold-if-checked" type="radio"
+                                           id="select_routeviews" name="site_choice" value="routeviews">
+                                    <label class="form-check-label label-check" for="select_routeviews">
+                                        Route Views
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="s_date" class="font-italic">Start date for the entire task:</label>
+                                <input type="text" class="form-control" id="s_date"
+                                       name="start_date_key" placeholder="Format: YYYYMMDD. Example: 20050523">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="e_date" class="font-italic">End date for the entire task:</label>
+                                <input type="text" class="form-control" id="e_date"
+                                       name="end_date_key" placeholder="YYYYMMDD. Example: 20050527">
+                            </div>
+                        </div>
+
+                        <!-- Buttons for submit and reset -->
+                        <div class="btn-toolbar">
+                            <button id="btn_submit" type="submit" class="btn btn-primary mr-3">Submit</button>
+                            <button id="btn_reset" type="reset" class="btn btn-secondary" style="background: #6c757d"
+                                    data-toggle="popover" data-trigger="hover" data-content="Reset the date/time/hyper-parameters">
+                                Reset
+                            </button>
+                        </div>
+                        <br>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <div class="progress">
+                                <span id="dynamic_bar"
+                                      class="progress-bar bg-success progress-bar-striped progress-bar-animated"
+                                      role="progressbar" aria-valuenow="99" aria-valuemin="0" aria-valuemax="100"
+                                      style="width: 0">
+                                </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- POST data JS -->
+                        <script src="../static/js/data_offline_post.js"></script>
+                    </form>
+
+                    {#                    <hr style="height:2px;border-width:0;color:gray;background-color:gray">#}
+
+                    <p>Results: {{ site_selected }}</p>
+                    <p>Parameters: {{ result_prediction }}</p>
+                </div>
+            </div>
+
+            <!-- Download results -->
+            <div class="row">
+                <div class="col-md-10 offset-md-1">
+                    <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+                    <p class="lead">Download result files</p>
+
+                    <form action="{{ url_for('post_data_clustering') }}" method="GET">
+                        <span>
+                            <button class="btn btn-primary"><i class="fa fa-file-download"></i> Download</button>
+                            results.zip: Classification results, labels, and train/test statistics
+                        </span>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+{% endblock %}
