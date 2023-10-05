@@ -26,9 +26,10 @@ import random
 import numpy as np
 import psutil
 from flask_socketio import SocketIO, emit, disconnect
+import sys
 
 # Import customized libraries
-# sys.path.append('./src')
+sys.path.append('./src')
 from src.dataDownload import updateMessageName
 from src.dataDownload import data_downloader_single
 from src.dataDownload import data_downloader_multi
