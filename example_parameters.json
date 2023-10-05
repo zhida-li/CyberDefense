@@ -1,0 +1,12 @@
+{
+    "site_choice": "ripe",
+    "start_date_key": "20050523",
+    "end_date_key": "20050527",
+    "start_date_anomaly_key": "20050525",
+    "end_date_anomaly_key": "20050525",
+    "start_time_anomaly_key": "0400",
+    "end_time_anomaly_key": "0759",
+    "cut_pct_key": 64,
+    "rnn_seq_key": 10
+
+}
