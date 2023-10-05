@@ -22,8 +22,8 @@ import os
 import sys
 
 # Import customized libraries
-sys.path.append('./src')
-from progress_bar import progress_bar
+
+#from progress_bar import progress_bar
 from subprocess_cmd import subprocess_cmd
 from time_tracker import time_tracker_multi
 
@@ -62,7 +62,7 @@ def data_downloader_single(update_message_file, data_date, site, collector_ripe=
                         chmod +x zebra-script.sh ;\
                         sh ./zebra-script.sh")
 
-        progress_bar(time_sleep=0.02, status_p='Converting')
+        #progress_bar(time_sleep=0.02, status_p='Converting')
 
         subprocess_cmd("echo ' '; \
                         echo '=> >>>>>>>>>> > > > > > DUMP generated (MRT to ASCII)' ")
@@ -87,7 +87,7 @@ def data_downloader_single(update_message_file, data_date, site, collector_ripe=
                         sh ./zebra-script.sh ; \
                         echo '=> >>>>>>>>>> > > > > > Decompressed bz2' ")
 
-        progress_bar(time_sleep=0.02, status_p='Converting')
+        #progress_bar(time_sleep=0.02, status_p='Converting')
 
         subprocess_cmd("echo ' '; \
                         echo '=> >>>>>>>>>> > > > > > DUMP generated (MRT to ASCII)' ")
@@ -145,7 +145,7 @@ def data_downloader_multi(start_date, end_date, site, collector_ripe='rrc04', co
                             chmod +x zebra-script.sh ; sh ./zebra-script.sh ; \
                             mv DUMP DUMP_%s" % (date_i, date_i))
 
-            progress_bar(time_sleep=0.02, status_p='Converting')
+            #progress_bar(time_sleep=0.02, status_p='Converting')
 
             subprocess_cmd("echo ' '; \
                             echo '=> >>>>>>>>>> > > > > > DUMP generated (MRT to ASCII)' ")
@@ -190,7 +190,7 @@ def data_downloader_multi(start_date, end_date, site, collector_ripe='rrc04', co
                             echo '=> >>>>>>>>>> > > > > > Decompressed bz2' ; \
                             mv DUMP DUMP_%s" % (date_i, date_i))
 
-            progress_bar(time_sleep=0.02, status_p='Converting')
+            #progress_bar(time_sleep=0.02, status_p='Converting')
 
             subprocess_cmd("echo ' '; \
                             echo '=> >>>>>>>>>> > > > > > DUMP generated (MRT to ASCII)' ")

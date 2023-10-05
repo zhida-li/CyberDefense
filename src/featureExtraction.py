@@ -21,7 +21,7 @@
 # import time
 
 # Import customized libraries
-from progress_bar import progress_bar
+#from progress_bar import progress_bar
 from subprocess_cmd import subprocess_cmd
 from time_tracker import time_tracker_multi
 
@@ -51,7 +51,7 @@ def feature_extractor_single(site, file_name='DUMP'):
         print("Wrong name")
         exit()
 
-    progress_bar(time_sleep=0.03, status_p='Generating')
+    #progress_bar(time_sleep=0.03, status_p='Generating')
 
     subprocess_cmd("echo ' '; \
                     echo '=> >>>>>>>>>> > > > > > Matrix generated (txt)' ; \
@@ -95,7 +95,7 @@ def feature_extractor_multi(start_date, end_date, site):
                             rm DUMP ; \
                             cd ..; cd ..; cd ..; cd ..; " % (date_i, file_name, file_name, file_name))
 
-            progress_bar(time_sleep=0.03, status_p='Generating')
+            #progress_bar(time_sleep=0.03, status_p='Generating')
 
             subprocess_cmd("echo ' '; \
                             echo '=> >>>>>>>>>> > > > > > Matrix generated (txt)' ; \
@@ -130,7 +130,7 @@ def feature_extractor_multi(start_date, end_date, site):
                             rm DUMP ; \
                             cd ..; cd ..; cd ..; cd ..; " % (date_i, file_name, file_name, file_name))
 
-            progress_bar(time_sleep=0.03, status_p='Generating')
+            #progress_bar(time_sleep=0.03, status_p='Generating')
 
             subprocess_cmd("echo ' '; \
                             echo '=> >>>>>>>>>> > > > > > Matrix generated (txt)' ; \
