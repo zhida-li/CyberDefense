@@ -136,3 +136,11 @@ dmypy.json
 src/CSharp_Tool_BGP/ConsoleApplication1/bin/Release/DUMP_featureselection.txt
 src/data_test/DUMP_out.txt
 src/STAT/sample.zip
+src/CSharp_Tool_BGP/ConsoleApplication1/bin/Release/*out.txt
+src/data_ripe/*/DUMPER
+src/data_ripe/*/index.html.tmp
+src/data_ripe/*/*.gz
+src/data_ripe/*/zebra-script.sh
+src/data_ripe/*/zebra-dump-parser-modified.pl
+src/data_ripe/*/name-change-script.sh
+src/CSharp_Tool_BGP/ConsoleApplication1/bin/Release/DUMP
