@@ -144,3 +144,4 @@ src/data_ripe/*/zebra-script.sh
 src/data_ripe/*/zebra-dump-parser-modified.pl
 src/data_ripe/*/name-change-script.sh
 src/CSharp_Tool_BGP/ConsoleApplication1/bin/Release/DUMP
+src/data_ripe/*/DUMP_*
