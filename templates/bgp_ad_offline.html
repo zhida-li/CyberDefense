@@ -51,7 +51,7 @@ last edit: June 24, 2023
                     <hr style="height:2px;border-width:0;color:gray;background-color:gray">
 
                     <!-- Forms -->
-                    <form action="{{ url_for('analyze_offline') }}" method="POST">
+                    <form action="{{ url_for('analyze_offline') }}" method="POST" enctype="multipart/form-data">
 
                         <div class="form-row">
                             <label class="col-form-label col-md-3 pt-0 font-italic">Select a collection site:</label>
@@ -71,55 +71,81 @@ last edit: June 24, 2023
                                         Route Views
                                     </label>
                                 </div>
+                                <!-- New option for Custom Dataset -->
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input label-to-bold-if-checked" type="radio"
+                                           id="select_custom" name="site_choice" value="custom">
+                                    <label class="form-check-label label-check" for="select_custom">Custom
+                                        Dataset</label>
+                                </div>
                             </div>
                         </div>
                         <br>
 
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="s_date" class="font-italic">Start date for the entire task:</label>
-                                <input type="text" class="form-control" id="s_date"
-                                       name="start_date_key" placeholder="Format: YYYYMMDD. Example: 20050523">
+                        <!-- Wrap the elements you want to hide/show in a div with an id -->
+                        <div id="optional-content">
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="s_date" class="font-italic">Start date for the entire task:</label>
+                                    <input type="text" class="form-control" id="s_date"
+                                           name="start_date_key" placeholder="Format: YYYYMMDD. Example: 20050523">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="e_date" class="font-italic">End date for the entire task:</label>
+                                    <input type="text" class="form-control" id="e_date"
+                                           name="end_date_key" placeholder="YYYYMMDD. Example: 20050527">
+                                </div>
                             </div>
-                            <div class="form-group col-md-6">
-                                <label for="e_date" class="font-italic">End date for the entire task:</label>
-                                <input type="text" class="form-control" id="e_date"
-                                       name="end_date_key" placeholder="YYYYMMDD. Example: 20050527">
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="s_date_ano" class="font-italic">Start date for the anomalous
+                                        event:</label>
+                                    <input type="text" class="form-control" id="s_date_ano"
+                                           name="start_date_anomaly_key" placeholder="YYYYMMDD. Example: 20050525">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="e_date_ano" class="font-italic">End date for the anomalous
+                                        event:</label>
+                                    <input type="text" class="form-control" id="e_date_ano"
+                                           name="end_date_anomaly_key" placeholder="YYYYMMDD. Example: 20050525">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="s_t_ano" class="font-italic">Start time (UTC) for the anomalous
+                                        event:</label>
+                                    <input type="text" class="form-control" id="s_t_ano"
+                                           name="start_time_anomaly_key" placeholder="Format: HHMM. Example: 0400">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="e_t_ano" class="font-italic">End time (UTC) for the anomalous
+                                        event:</label>
+                                    <input type="text" class="form-control" id="e_t_ano"
+                                           name="end_time_anomaly_key" placeholder="HHMM. Example: 1159">
+                                </div>
+                            </div>
+                            <!-- date & time pickers JS -->
+                            <script src="../static/js/dateTimePicker.js"></script>
+
+                        </div>
+
+                        <!-- Upload file -->
+                        <div id="upload-section" style="display: none;">
+                            <div class="form-group">
+                                <label for="customFile">Upload Dataset:</label>
+                                <input type="file" class="form-control-file" id="customFile" name="customFile"
+                                       accept=".csv">
+                                <small class="form-text text-muted">Please upload a CSV file.</small>
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label for="s_date_ano" class="font-italic">Start date for the anomalous event:</label>
-                                <input type="text" class="form-control" id="s_date_ano"
-                                       name="start_date_anomaly_key" placeholder="YYYYMMDD. Example: 20050525">
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label for="e_date_ano" class="font-italic">End date for the anomalous event:</label>
-                                <input type="text" class="form-control" id="e_date_ano"
-                                       name="end_date_anomaly_key" placeholder="YYYYMMDD. Example: 20050525">
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="s_t_ano" class="font-italic">Start time (UTC) for the anomalous
-                                    event:</label>
-                                <input type="text" class="form-control" id="s_t_ano"
-                                       name="start_time_anomaly_key" placeholder="Format: HHMM. Example: 0400">
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label for="e_t_ano" class="font-italic">End time (UTC) for the anomalous event:</label>
-                                <input type="text" class="form-control" id="e_t_ano"
-                                       name="end_time_anomaly_key" placeholder="HHMM. Example: 1159">
-                            </div>
-                        </div>
-                        <!-- date & time pickers JS -->
-                        <script src="../static/js/dateTimePicker.js"></script>
-
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="cut_percentage" class="font-italic">Data partition based on the percentage
+                                <label for="cut_percentage" class="font-italic">Data partition based on the
+                                    percentage
                                     of anomalous data:</label>
                                 <div id="percentage">
                                     <span id="train-percentage">60</span>% Training / <span
@@ -129,6 +155,25 @@ last edit: June 24, 2023
                                 <input type="range" min="1" max="9" value="6" class="slider" id="cut_percentage">
                                 <!-- This hidden input field will hold the value that gets submitted -->
                                 <input type="hidden" id="cut_percentage_hidden" name="cut_pct_key">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="col-md-6 mb-3">
+                                <label for="algo" class="font-italic">Machine learning algorithm:</label>
+                                <div class="dropdown custom-dropdown">
+                                    <button class="btn btn-secondary btn-no-border btn-sm dropdown-toggle custom-font-size"
+                                            type="button" id="dropdownButton3" data-toggle="dropdown"
+                                            aria-expanded="false">
+                                        Machine learning model selection:
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownButton3">
+                                        <a class="dropdown-item dropdown-item3" href="#offLine_ripe">LSTM and GRU</a>
+                                        <a class="dropdown-item dropdown-item3" href="#offLine_ripe">Bi-LSTM and Bi-GRU</a>
+                                    </div>
+                                </div>
+                                <!-- This hidden input field will hold the value that gets submitted -->
+                                <input type="hidden" id="algo_hidden" name="algo_key">
                             </div>
                         </div>
 
@@ -157,7 +202,8 @@ last edit: June 24, 2023
                         <div class="btn-toolbar">
                             <button id="btn_submit" type="submit" class="btn btn-primary mr-3">Submit</button>
                             <button id="btn_reset" type="reset" class="btn btn-secondary" style="background: #6c757d"
-                                    data-toggle="popover" data-trigger="hover" data-content="Reset the date/time/hyper-parameters">
+                                    data-toggle="popover" data-trigger="hover"
+                                    data-content="Reset the date/time/hyper-parameters">
                                 Reset
                             </button>
                         </div>

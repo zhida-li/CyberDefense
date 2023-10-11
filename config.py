@@ -25,12 +25,15 @@ from flask import Flask
 from flask_socketio import SocketIO
 from threading import Lock
 
+UPLOAD_FOLDER = './database/uploaded_files'
+
 
 def flask_config():
     async_mode = None
     # Declare a Flask app
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'secret!'
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  # Setting the upload folder
     socketio = SocketIO(app, async_mode=async_mode)
     thread = None
     thread_lock = Lock()
@@ -58,6 +61,8 @@ def flask_folder():
         os.makedirs(temp_ripe_folder)
     if not os.path.exists(temp_routeviews_folder):
         os.makedirs(temp_routeviews_folder)
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
 
-        print("\n BGPGuard => >>>>>>>>>> Folders have been created.")
+        print("\n CyberDefense => >>>>>>>>>> Folders have been created.")
     return None

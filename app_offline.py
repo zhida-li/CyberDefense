@@ -72,7 +72,8 @@ def app_offline_classification(header_offLine, input_exp_key):
     start_date_anomaly, end_date_anomaly = input_exp_key[3], input_exp_key[4]
     start_time_anomaly, end_time_anomaly = input_exp_key[5], input_exp_key[6]
     cut_pct = input_exp_key[7]
-    rnn_seq = int(input_exp_key[8])
+    ALGO = input_exp_key[8]
+    rnn_seq = int(input_exp_key[9])
     print("--------------------Loading settings successfully-------------")
 
     collector_ripe = 'rrc04'
@@ -87,34 +88,60 @@ def app_offline_classification(header_offLine, input_exp_key):
     # print("Top features:", selected_features)
     normTrainTest(cut_pct, site)
 
-    print("--------------------Experiment-Begin--------------------------")
-    subprocess_cmd("cd src/; \
-                    cp ./data_split/train_%s_%s_n.csv ./data_split/test_%s_%s_n.csv ./RNN_Running_Code/RNN_Run/dataset/ ; \
-                    cd RNN_Running_Code/RNN_Run/dataset/; \
-                    mv train_%s_%s_n.csv train.csv; mv test_%s_%s_n.csv test.csv; \
-                    cd ..; cd ..; \
-                    chmod +x integrate_run.sh; sh ./integrate_run.sh ; \
-                    cd RNN_Run/; sh ./collect.sh; \
-                    cp -r res_acc res_run ../data_representation/ ; \
-                    cd .. ; cd data_representation/ ; \
-                    python TableGenerator.py; " \
-                   % (cut_pct, site, cut_pct, site, cut_pct, site, cut_pct, site))
+    if ALGO == 'LSTM_GRU':
+        print("--------------------RNNs Experiment-Begin--------------------------")
+        subprocess_cmd("cd src/; \
+                        cp ./data_split/train_%s_%s_n.csv ./data_split/test_%s_%s_n.csv ./RNN_Running_Code/RNN_Run/dataset/ ; \
+                        cd RNN_Running_Code/RNN_Run/dataset/; \
+                        mv train_%s_%s_n.csv train.csv; mv test_%s_%s_n.csv test.csv; \
+                        cd ..; cd ..; \
+                        chmod +x integrate_run.sh; sh ./integrate_run.sh ; \
+                        cd RNN_Run/; sh ./collect.sh; \
+                        cp -r res_acc res_run ../data_representation/ ; \
+                        cd .. ; cd data_representation/ ; \
+                        python TableGenerator.py; " \
+                       % (cut_pct, site, cut_pct, site, cut_pct, site, cut_pct, site))
 
-    print("--------------------Experiment-end----------------------------")
-    subprocess_cmd("cd src/; \
-                    mv ./RNN_Running_Code/data_representation/data_representation_table.csv ./STAT/ ; \
-    				mv ./STAT/data_representation_table.csv ./STAT/results_%s_%s.csv" \
-                   % (cut_pct, site))
+        print("--------------------RNNs Experiment-end----------------------------")
+        subprocess_cmd("cd src/; \
+                        mv ./RNN_Running_Code/data_representation/data_representation_table.csv ./STAT/ ; \
+                        mv ./STAT/data_representation_table.csv ./STAT/results_%s_%s.csv" \
+                       % (cut_pct, site))
 
-    # Remove generated folders
-    subprocess_cmd("cd src/; \
-                    cd RNN_Running_Code/RNN_Run/; \
-                    rm -rf ./experiment/ ./res_acc/ ./res_run/ ./tmp/")
+        # Remove generated folders
+        subprocess_cmd("cd src/; \
+                        cd RNN_Running_Code/RNN_Run/; \
+                        rm -rf ./experiment/ ./res_acc/ ./res_run/ ./tmp/")
+
+    elif ALGO == 'Bi-LSTM_Bi-GRU':
+        print("--------------------RNNs Experiment-Begin--------------------------")
+        subprocess_cmd("cd src/; \
+                        cp ./data_split/train_%s_%s_n.csv ./data_split/test_%s_%s_n.csv ./BiRNN_Running_Code/BiRNN_Run/dataset/ ; \
+                        cd BiRNN_Running_Code/BiRNN_Run/dataset/; \
+                        mv train_%s_%s_n.csv train.csv; mv test_%s_%s_n.csv test.csv; \
+                        cd ..; cd ..; \
+                        chmod +x integrate_run.sh; sh ./integrate_run.sh ; \
+                        cd BiRNN_Run/; sh ./collect.sh; \
+                        cp -r res_acc res_run ../data_representation/ ; \
+                        cd .. ; cd data_representation/ ; \
+                        python TableGenerator.py; " \
+                       % (cut_pct, site, cut_pct, site, cut_pct, site, cut_pct, site))
+
+        print("--------------------RNNs Experiment-end----------------------------")
+        subprocess_cmd("cd src/; \
+                        mv ./BiRNN_Running_Code/data_representation/data_representation_table.csv ./STAT/ ; \
+                        mv ./STAT/data_representation_table.csv ./STAT/results_%s_%s.csv" \
+                       % (cut_pct, site))
+
+        # Remove generated folders
+        subprocess_cmd("cd src/; \
+                        cd BiRNN_Running_Code/BiRNN_Run/; \
+                        rm -rf ./experiment/ ./res_acc/ ./res_run/ ./tmp/")
 
     # Information from back-end to front-end, "Results are available"
-    context_offLine = {"result_prediction": input_exp_key,
-                       "site_selected": "Results are ready to download!",
-                       "header2": header_offLine}
+    context_offLine = {'result_prediction': input_exp_key,
+                       'site_selected': "Results are ready to download!",
+                       'header2': header_offLine}
     return context_offLine
 
 
