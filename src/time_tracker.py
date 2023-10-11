@@ -129,3 +129,29 @@ def time_tracker_multi(start_date, end_date):
         datestart += datetime.timedelta(days=1)
 
     return date_list
+
+
+# Check if the dates are valid
+def are_dates_valid(start_date, start_date_anomaly, end_date_anomaly, end_date, start_time_anomaly, end_time_anomaly):
+    # Convert date strings to integers
+    start_date_int = int(start_date)
+    end_date_int = int(end_date)
+    start_date_anomaly_int = int(start_date_anomaly)
+    end_date_anomaly_int = int(end_date_anomaly)
+
+    # Convert time strings to integers
+    start_time_int = int(start_time_anomaly)
+    end_time_int = int(end_time_anomaly)
+
+    # Check conditions
+    if start_date_int <= end_date_int and \
+            start_date_int <= start_date_anomaly_int and \
+            end_date_anomaly_int <= end_date_int:
+
+        # Special case where all dates are equal
+        if start_date_int == start_date_anomaly_int == end_date_anomaly_int == end_date_int:
+            if start_time_int >= end_time_int:
+                return False
+        return True
+
+    return False

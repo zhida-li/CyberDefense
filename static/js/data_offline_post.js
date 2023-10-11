@@ -20,7 +20,7 @@ $(document).ready(function () {
     // Update the hidden input when a dropdown item is selected
     $('.dropdown-item3').click(function () {
         $('#algo_hidden').val($(this).text());
-        $('#dropdownButton3').text('Machine learning algorithm selected: ' + $(this).text());
+        $('#dropdownButton5').text('Machine learning algorithm selected: ' + $(this).text());
     });
 
     // Update the hidden input when a dropdown item is selected

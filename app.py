@@ -36,6 +36,7 @@ from app_realtime import app_realtime_detection
 from app_offline import app_offline_classification
 from config import flask_config
 from config import flask_folder
+from src.time_tracker import are_dates_valid
 
 # print(__doc__)
 
@@ -130,7 +131,7 @@ def analyze_offline():
 
         # Ensure all parameters are received for non-custom datasets
         if set(request.form.keys()) != model_params:
-            return 'Missing parameters', 400
+            return "Missing parameters", 400
             # return render_template('bgp_ad_offline.html', header2=header_offLine)
 
         print("\n Server checked: Parameter received from the client :-) \n")
@@ -149,19 +150,24 @@ def analyze_offline():
 
         input_exp_key = [site, start_date, end_date, start_date_anomaly, end_date_anomaly,
                          start_time_anomaly, end_time_anomaly, cut_pct, ALGO, rnn_seq]
-        # Load the dict data for the front-end (off-line)
+
+        # Check if the dates are valid
+        if not are_dates_valid(start_date, start_date_anomaly, end_date_anomaly, end_date,
+                               start_time_anomaly, end_time_anomaly):
+            return "Please re-enter the date/time", 400
+        # Pass the parameters (list) to the off-line classification
         context_offLine = app_offline_classification(header_offLine, input_exp_key)
 
         time.sleep(5)  # to be changed
         print("--------------------Saving Results-begin--------------------------")
         # if not os.path.exists('./src/STAT/results.zip'):
         # zip results
-        zipObj = zipfile.ZipFile('./src/STAT/results.zip', 'w')
+        zipObj = zipfile.ZipFile('./src/STAT/%s_results.zip' % ALGO, 'w')
         zipObj.write('./src/STAT/train_test_stat.txt')
         # Use glob find the csv file with prefix "labels_"
         for file in glob.glob('./src/STAT/labels_*.csv'):
             zipObj.write(file)  # RIPE or Route Views
-        for file in glob.glob('./src/STAT/results_*.csv'):
+        for file in glob.glob('./src/STAT/%s_results_*.csv' % ALGO):
             zipObj.write(file)  # (* = cut_pct, site)
         # zipObj.write('./src/STAT/labels_*.csv')
         # zipObj.write('./src/STAT/results_*.csv')
