@@ -18,24 +18,35 @@ last edit: Jan. 1, 2022
                     <div class="row">
                         <div class="col-md-4">
                             <img src="../static/imgs/profile_zl.png">
-                            <h5>Zhida Li</h5>
+                            <h5><a href="https://www.nyit.edu/bio/zli74">Zhida Li</a></h5>
                         </div>
                         <!-- right 8col -->
                         <div class="col-md-8 text-left">
-                            <p class="lead">Ph.D. Candidate | Research Assistant</p>
+                            <p class="lead">Assistant Professor</p>
                             <!-- style="text-align:justify;" -->
-                            <p >Zhida received the B.E. and M.Eng.Sc. degrees in Electrical Engineering and
-                                Microelectronic Design
-                                from the University College Cork, Ireland, in 2011 and 2013, respectively.
-                                He is currently pursuing a Ph.D. degree at Simon Fraser University.</p>
-                            <p>His current research project deals with development of fast machine learning algorithms
-                                and a real-time system for detecting network anomalies.
-                                Zhida is an active IEEE volunteer and served as the Secretary and Vice-Chair
-                                of the IEEE SFU Student Branch in 2019-2020 and 2020-2021, respectively.
-                                He was a Program Committee Member of IEEE International Conference on High Performance
-                                Computing and Communications (HPCC) 2020 and Session Chair at IEEE International
-                                Conference on Cyber, Physical, and Social Computing (CPSCom) 2020.
-                                He serves as a Publicity Chair of CPSCom 2022.</p>
+                            <p style="text-align: justify !important;">
+                                Zhida Li received his B.E. and M.Eng.Sc. in electrical engineering and microelectronic
+                                design, respectively, from the University College Cork, Ireland. He received his Ph.D.
+                                in engineering science from Simon Fraser University (SFU), Canada.</p>
+
+                            <p style="text-align: justify !important;">He is an assistant professor in the Department of
+                                Computer Science at New York Institute of Technology-Vancouver, in British Columbia,
+                                Canada. From 2011 to 2014, he was a research assistant at Tyndall National Institute,
+                                Ireland. He was a postdoctoral fellow at SFU from June to December in 2022.
+                                His research interests include machine learning systems for detecting network anomalies,
+                                brain-computer interfaces, and blockchain.</p>
+
+                            <p style="text-align: justify !important;">
+                                Dr. Li serves as secretary (2022-present) of the Membership Development Committee,
+                                IEEE Canada. He is chair (2023–present) of the IEEE Circuits and Systems Society joint
+                                chapter of the Vancouver/Victoria sections. He served as a Technical Program Committee
+                                (TPC) member of the IEEE International Conference on High Performance Computing and
+                                Communications
+                                (HPCC) in 2020 and a session chair at IEEE International Conference on Cyber, Physical,
+                                and Social Computing (CPSCom) in 2020. He served as a publicity chair and a TPC member
+                                of the CPSCom 2022 and a TPC member of the International Conference on E-Business and
+                                Internet (ICEBI) 2023. He is a TPC member of the International Conference on Intelligent
+                                Sensing and Industrial Automation (ISIA) 2023 and a member of the IEEE.</p>
                         </div>
                     </div>
                 </div>
@@ -50,25 +61,28 @@ last edit: Jan. 1, 2022
         <div class="container">
             <div class="row">
                 <div class="col-md-8 offset-md-2 text-center">
-                    <h3>Join Our Email List</h3>
+                    <h3>Our Latest Research</h3>
                 </div>
             </div>
-            <!-- input -->
             <div class="row">
                 <div class="col-md-8 offset-md-2 text-left">
                     <p>Kindly let us inform you of our latest research</p>
-                    <div class="input-group input-group-lg">
-                        <input type="text" class="form-control" aria-label="Large"
-                               aria-describedby="inputGroup-sizing-sm"
-                               placeholder="Your email address">
-                    </div>
-                    <br>
-                    <!-- button -->
-                    <a class="btn btn-primary btn-md" href="#" role="button">Send</a>
+                    <form id="emailForm">
+                        <div class="input-group input-group-lg">
+                            <input type="text" name="user_email" class="form-control" aria-label="Large"
+                                   aria-describedby="inputGroup-sizing-sm"
+                                   placeholder="Your email address">
+                        </div>
+                        <br>
+                        <!-- button -->
+                        <input type="submit" class="btn btn-primary btn-md" value="Send">
+                    </form>
                 </div>
             </div>
-
         </div>
+
+        <!-- Email script -->
+        <script src="../static/js/contact_email.js"></script>
     </section>
 
 {% endblock %}
