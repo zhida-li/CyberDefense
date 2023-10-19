@@ -15,8 +15,8 @@
 # ==============================================
 # main file: app.py
 # ==============================================
-# Last modified: June 24, 2023
-# task: updated offline experiment
+# Last modified: Sept. 27, 2023
+# task: added custom dataset option for offline classification
 
 # Import the built-in libraries
 import os
@@ -29,12 +29,14 @@ import glob
 import numpy as np
 from flask import Flask, render_template, url_for, request, send_file, abort
 from flask_socketio import SocketIO, emit, disconnect
+from werkzeug.utils import secure_filename
 
 # Import customized libraries
 from app_realtime import app_realtime_detection
 from app_offline import app_offline_classification
 from config import flask_config
 from config import flask_folder
+from src.time_tracker import are_dates_valid
 
 # print(__doc__)
 
@@ -45,6 +47,12 @@ flask_folder()
 # Headers (html)
 header_realTime = "Real-Time BGP Anomaly Detection"
 header_offLine = "Off-Line BGP Anomaly Classification"
+ALLOWED_EXTENSIONS = {'csv'}  # for custom dataset
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 """
 ## Establish routes
@@ -74,14 +82,58 @@ def bgp_ad_offline():
 @app.route('/bgp_ad_offline', methods=['POST'])
 def analyze_offline():
     print('Dict. params. received from the front-end: \n', request.form)  # check if receive keys (name) from front-end
-    model_params = {'site_choice',
-                    'start_date_key', 'end_date_key',
-                    'start_date_anomaly_key', 'end_date_anomaly_key',
-                    'start_time_anomaly_key', 'end_time_anomaly_key',
-                    'cut_pct_key',
-                    'rnn_seq_key'}
 
-    if model_params == set(request.form.keys()):
+    if request.form.get('site_choice') == 'custom':
+        # Handle the uploaded file
+        if 'customFile' not in request.files or request.files['customFile'].filename == '':
+            # We might want to send a more user-friendly response
+            return 'No file uploaded', 400  # Bad Request
+
+        model_params = {
+            'site_choice',
+            'cut_pct_key',
+            'algo_key',
+            'rnn_seq_key'
+        }
+
+        file = request.files['customFile']
+        print('Received file:', file.filename)  # Debugging line
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            print('Saving to:', filepath)  # Debugging line
+            file.save(filepath)
+
+            # Read the uploaded CSV into a DataFrame
+            data_upload = np.loadtxt(filepath, delimiter=',')
+            print(data_upload)  # Display the data in the console
+
+            # Here, we can further process the data as needed...
+            # Information from back-end to front-end, "Results are available" (developing)
+            context_offLine = {'site_selected': "Results are ready to download!",
+                               'header2': header_offLine}
+            return render_template('bgp_ad_offline.html', **context_offLine)
+        else:
+            return "File not allowed", 400
+
+    # If not processing an uploaded file, then run the existing code
+    else:
+        model_params = {
+            'site_choice',
+            'start_date_key', 'end_date_key',
+            'start_date_anomaly_key', 'end_date_anomaly_key',
+            'start_time_anomaly_key', 'end_time_anomaly_key',
+            'cut_pct_key',
+            'algo_key',
+            'rnn_seq_key'
+        }
+
+        # Ensure all parameters are received for non-custom datasets
+        if set(request.form.keys()) != model_params:
+            return "Missing parameters", 400
+            # return render_template('bgp_ad_offline.html', header2=header_offLine)
+
         print("\n Server checked: Parameter received from the client :-) \n")
 
         site = request.form.get('site_choice')  # or use 'request.form['']' due to dict format
@@ -93,23 +145,29 @@ def analyze_offline():
         start_time_anomaly = request.form.get('start_time_anomaly_key')
         end_time_anomaly = request.form.get('end_time_anomaly_key')
         cut_pct = request.form.get('cut_pct_key')
+        ALGO = request.form.get('algo_key')
         rnn_seq = request.form.get('rnn_seq_key')
 
-        input_exp_key = [site, start_date, end_date, start_date_anomaly, end_date_anomaly, start_time_anomaly,
-                         end_time_anomaly, cut_pct, rnn_seq]
-        # Load the dict data for the front-end (off-line)
+        input_exp_key = [site, start_date, end_date, start_date_anomaly, end_date_anomaly,
+                         start_time_anomaly, end_time_anomaly, cut_pct, ALGO, rnn_seq]
+
+        # Check if the dates are valid
+        if not are_dates_valid(start_date, start_date_anomaly, end_date_anomaly, end_date,
+                               start_time_anomaly, end_time_anomaly):
+            return "Please re-enter the date/time", 400
+        # Pass the parameters (list) to the off-line classification
         context_offLine = app_offline_classification(header_offLine, input_exp_key)
 
         time.sleep(5)  # to be changed
         print("--------------------Saving Results-begin--------------------------")
         # if not os.path.exists('./src/STAT/results.zip'):
         # zip results
-        zipObj = zipfile.ZipFile('./src/STAT/results.zip', 'w')
+        zipObj = zipfile.ZipFile('./src/STAT/%s_results.zip' % ALGO, 'w')
         zipObj.write('./src/STAT/train_test_stat.txt')
         # Use glob find the csv file with prefix "labels_"
         for file in glob.glob('./src/STAT/labels_*.csv'):
             zipObj.write(file)  # RIPE or Route Views
-        for file in glob.glob('./src/STAT/results_*.csv'):
+        for file in glob.glob('./src/STAT/%s_results_*.csv' % ALGO):
             zipObj.write(file)  # (* = cut_pct, site)
         # zipObj.write('./src/STAT/labels_*.csv')
         # zipObj.write('./src/STAT/results_*.csv')
@@ -123,8 +181,6 @@ def analyze_offline():
 
         return render_template('bgp_ad_offline.html', **context_offLine)
         # return render_template('bgp_ad_offline.html', result_prediction=result_prediction)
-    else:
-        return render_template('bgp_ad_offline.html', header2=header_offLine)
 
 
 # Off-Line Download GET request
@@ -266,11 +322,14 @@ def test_disconnect():
 def get_data_clustering():
     return render_template('data_clustering.html', header2="Data Clustering")
 
+
 # # Data Clustering POST (route)
 @app.route('/data_clustering', methods=['POST'])
 def post_data_clustering():
     print('Dict. params. received from the front-end: \n', request.form)  # check if receive keys (name) from front-end
     return render_template('data_clustering.html', header2=str(request.form))
+
+
 """
 ## Launch app
 """
