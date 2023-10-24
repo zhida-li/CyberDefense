@@ -88,7 +88,7 @@ def app_offline_classification(header_offLine, input_exp_key):
     # print("Top features:", selected_features)
     normTrainTest(cut_pct, site)
 
-    if ALGO == 'LSTM_GRU':
+    if ALGO == 'LSTM and GRU':
         print("--------------------RNNs Experiment-Begin--------------------------")
         subprocess_cmd("cd src/; \
                         cp ./data_split/train_%s_%s_n.csv ./data_split/test_%s_%s_n.csv ./RNN_Running_Code/RNN_Run/dataset/ ; \
@@ -113,7 +113,7 @@ def app_offline_classification(header_offLine, input_exp_key):
                         cd RNN_Running_Code/RNN_Run/; \
                         rm -rf ./experiment/ ./res_acc/ ./res_run/ ./tmp/")
 
-    elif ALGO == 'Bi-LSTM_Bi-GRU':
+    elif ALGO == 'Bi-LSTM and Bi-GRU':
         print("--------------------RNNs Experiment-Begin--------------------------")
         subprocess_cmd("cd src/; \
                         cp ./data_split/train_%s_%s_n.csv ./data_split/test_%s_%s_n.csv ./BiRNN_Running_Code/BiRNN_Run/dataset/ ; \
