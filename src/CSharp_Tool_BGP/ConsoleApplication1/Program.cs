@@ -17,12 +17,31 @@ namespace ConsoleApplication1
         /// The main function is the starting point for the compiler to start compiling the code
         /// </summary>
         /// <param name="args"> The argument list that the user might provide to the main</param>
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             
             List<pins> PINS = new List<pins>();
 			String file_name = "DUMP";
             int brojac = 0;
+
+            //Exit code = 0 ==> SUCCESS
+            //Exit code = 1 ==> FAILED
+
+            //Parsing Parameters
+            if (args != null && args.Length > 0)
+            {
+                // Checking if INPUT_FILE_PATH was passed by parameter
+                file_name = args[0];
+                Console.WriteLine("INPUT_FILE_PATH parameter was received: " + file_name);
+                
+            }
+
+            //Checking if INPUT_FILE_PATH exists
+            if (!File.Exists(file_name)) {
+                Console.WriteLine("FATAL ERROR: Specified INPUT_FILE_PATH not exists: " + file_name);
+                return 1;
+            }
+            
 
 
             // varijabla koju cemo koristiti, choose FROM AS
@@ -769,6 +788,7 @@ namespace ConsoleApplication1
             }
             streamwriter1.Close();
             streamwriter2.Close();
+            return 0;
         }//end of main
 
 
