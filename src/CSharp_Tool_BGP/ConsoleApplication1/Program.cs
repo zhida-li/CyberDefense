@@ -22,6 +22,7 @@ namespace ConsoleApplication1
             
             List<pins> PINS = new List<pins>();
 			String file_name = "DUMP";
+            String output_file_name = "DUMP";
             int brojac = 0;
 
             //Exit code = 0 ==> SUCCESS
@@ -33,7 +34,16 @@ namespace ConsoleApplication1
                 // Checking if INPUT_FILE_PATH was passed by parameter
                 file_name = args[0];
                 Console.WriteLine("INPUT_FILE_PATH parameter was received: " + file_name);
-                
+
+                // Checking if OUTPUT_FILE_PATH was passed by parameter
+                if (args.Length > 1) {
+                    output_file_name = args[1];
+                } else {
+                    // If was not passed, the output files will be
+                    // placed in the same path of the input files
+                    output_file_name = args[0];
+                }
+                Console.WriteLine("OUTPUT_FILE_PATH parameter was set to: " + output_file_name);
             }
 
             //Checking if INPUT_FILE_PATH exists
@@ -592,8 +602,8 @@ namespace ConsoleApplication1
             //Writing to the stdout//
             /////////////////////////
 
-            TextWriter streamwriter1 = new StreamWriter(file_name+ "_out.txt");
-            TextWriter streamwriter2 = new StreamWriter(file_name + "_featureselection.txt");
+            TextWriter streamwriter1 = new StreamWriter(output_file_name+ "_out.txt");
+            TextWriter streamwriter2 = new StreamWriter(output_file_name + "_featureselection.txt");
             //TextWriter streamwriter1 = new StreamWriter(args[1]);
             //TextWriter streamwriter2 = new StreamWriter(args[1] + "_featureselection");
             for (int i = 0; i < PINS.Count; i++)
