@@ -39,6 +39,7 @@ The 37 BGP features were extracted using this C# tool.
 * Columns 5-41: features
 
 ### List of features extracted from BGP update messages:
+```bash
 1. Number of announcements
 2. Number of withdrawals
 3. Number of announced NLRI prefixes
@@ -57,7 +58,10 @@ The 37 BGP features were extracted using this C# tool.
 34. Number of Interior Gateway Protocol (IGP) packets
 35. Number of Exterior Gateway Protocol (EGP) packets
 36. Number of incomplete packets
-37. Packet size (B)
+37: Packet size (B)
+```
+
+Source: [link](https://www.sfu.ca/~ljilja/cnl/projects/BGP_datasets/index.html)
 
 ## Building
 
