@@ -4,19 +4,17 @@ import os
 import sys
 import pickle
 
-from src.dataDownload import data_downloader_multi
-from src.featureExtraction import feature_extractor_multi
-from src.label_generation import label_generator
-from src.data_partition import data_partition
-from src.data_process import normTrainTest
-from src.subprocess_cmd import subprocess_cmd
+from dataDownload import data_downloader_multi
+from featureExtraction import feature_extractor_multi
+from label_generation import label_generator
+from data_partition import data_partition
+from data_process import normTrainTest
+from subprocess_cmd import subprocess_cmd
+import config
+
 
 
 logger = logging.getLogger(__name__)
-
-gconfig = {
-    "workdir" : ""
-}
 
 def configureCmdLineParser():
     cmdparser = argparse.ArgumentParser(description='Command line CyberDefense')
@@ -38,6 +36,7 @@ def configureCmdLineParser():
     download.add_argument('-c', '--collector',
                         help='Collector, default rrc04',
                         default='rrc04')
+    download.add_argument('-s', '--source', help)
 
     features = subparser.add_parser('extract')
     features.add_argument('-b', '--begindate',
@@ -84,8 +83,8 @@ def main():
     cmd = cmdparser.parse_args()
 
     # Get logging up and running
-    gconfig['workdir'] = cmd.workdir
-    workdir = gconfig['workdir']
+    config.gconfig['workdir'] = cmd.workdir
+    workdir = config.gconfig['workdir']
     if os.path.exists(workdir):
         if not os.path.isdir(workdir):
             print('Error: working directory %s exists and is not a directory!' % workdir)
