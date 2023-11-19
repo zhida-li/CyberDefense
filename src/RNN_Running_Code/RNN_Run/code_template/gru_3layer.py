@@ -165,6 +165,7 @@ class RNN(nn.Module):
 
 
 rnn = RNN()
+start = time.clock()
 rnn.train()
 if torch.cuda.is_available():
     rnn.cuda()
@@ -223,9 +224,7 @@ for epoch in range(num_epochs):
         optimizer.step()                                                      # apply gradients
 
 
-
-
-
+end = time.clock()
 
 
 ### Test the model using evaluation mode ###
@@ -256,9 +255,6 @@ yo = np.array([yo]).reshape(test_len, -1)
 yo_test = test_label_y.numpy()
 acc = accuracy_score(yo_test, yo)
 fScore = f1_score(yo_test, yo)
-
-
-end = time.time()
 
 
 # Save the accuracy and F-Score

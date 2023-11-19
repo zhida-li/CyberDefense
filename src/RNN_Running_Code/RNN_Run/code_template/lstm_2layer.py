@@ -171,6 +171,7 @@ class RNN(nn.Module):
         return x
 
 rnn = RNN()
+start = time.clock()
 rnn.train()
 
 if torch.cuda.is_available():
@@ -207,7 +208,6 @@ print ("hidden_size : " , hidden_size);
 
 
 
-start = time.time()
 
 
 
@@ -231,10 +231,7 @@ for epoch in range(num_epochs):
          #   print ('Epoch [%d/%d], Step [%d/%d], Loss: %.4f'
            #        % (epoch + 1, num_epochs, i + 1, len(trainDataset) // batch_size, loss.item()))
 
-
-
-
-
+end = time.clock()
 
 
 ### Test the model using evaluation mode ###
@@ -264,14 +261,6 @@ yo = np.array([yo]).reshape(test_len, -1)
 yo_test = test_label_y.numpy()
 acc = accuracy_score(yo_test, yo)
 fScore = f1_score(yo_test, yo)
-
-
-
-
-end = time.time()
-
-
-
 
 
 # Save the accuracy and F-Score
