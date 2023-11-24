@@ -28,9 +28,6 @@ void validate(vector<summarydata>& data) {
                 cout << "BOX has entries out of time period!" << endl;
             }
         }
-        if ( d.bgp_entries.size() > 5000 ) {
-            cout << "Box is HUGE!" << endl;
-        }
     }
 }
 
