@@ -33,3 +33,10 @@ Examples:
 mrtprocessor -d /Users/ballanty/cyberdefense_work -s ripe -T -c rrc04 20101112 -o testdata/cpp-output2.txt
 
 mrtprocessor -T -np -f /Users/ballanty/cyberdefense_work/ripe/rrc04/2010.11.12/updates.20101112.0000.gz
+
+## Building
+
+This tool depends on the bgpdump library from RIPE-NCC (https://github.com/RIPE-NCC/bgpdump).
+
+You will have to download and build/install that library and modify CMakeLists.txt
+appropriately to get the tool to build and link on your system.
