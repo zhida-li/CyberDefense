@@ -24,7 +24,7 @@ void validate(vector<summarydata>& data) {
     for ( auto d : data ) {
         time_t box_begin = d.begin;
         for ( auto bgp : d.bgp_entries ) {
-            if ( bgp.type - box_begin >= 60 ) {
+            if ( bgp->time - box_begin >= 60 ) {
                 cout << "BOX has entries out of time period!" << endl;
             }
         }
@@ -184,26 +184,26 @@ bool ipequal(u_int16_t address_family, BGPDUMP_IP_ADDRESS& a, BGPDUMP_IP_ADDRESS
     }
 }
 
-bool ipinannoucement(u_int16_t address_family, BGPDUMP_IP_ADDRESS& ip, BGPDUMP_ENTRY& bgp_entry) {
-    if ( address_family != bgp_entry.body.zebra_message.address_family ) {
+bool ipinannoucement(u_int16_t address_family, BGPDUMP_IP_ADDRESS& ip, BGPDUMP_ENTRY* bgp_entry) {
+    if ( address_family != bgp_entry->body.zebra_message.address_family ) {
         return false;
     }
 
-    for ( int i = 0 ; i < bgp_entry.body.zebra_message.announce_count; i++ ) {
-        if (ipequal(address_family, ip, bgp_entry.body.zebra_message.announce[i].address))
+    for ( int i = 0 ; i < bgp_entry->body.zebra_message.announce_count; i++ ) {
+        if (ipequal(address_family, ip, bgp_entry->body.zebra_message.announce[i].address))
             return true;
     }
 
     return false;
 }
 
-bool ipinwithdrawal(u_int16_t address_family, BGPDUMP_IP_ADDRESS& ip, BGPDUMP_ENTRY& bgp_entry) {
-    if ( address_family != bgp_entry.body.zebra_message.address_family ) {
+bool ipinwithdrawal(u_int16_t address_family, BGPDUMP_IP_ADDRESS& ip, BGPDUMP_ENTRY* bgp_entry) {
+    if ( address_family != bgp_entry->body.zebra_message.address_family ) {
         return false;
     }
 
-    for ( int i = 0 ; i < bgp_entry.body.zebra_message.withdraw_count; i++ ) {
-        if (ipequal(address_family, ip, bgp_entry.body.zebra_message.withdraw[i].address))
+    for ( int i = 0 ; i < bgp_entry->body.zebra_message.withdraw_count; i++ ) {
+        if (ipequal(address_family, ip, bgp_entry->body.zebra_message.withdraw[i].address))
             return true;
     }
 
@@ -213,7 +213,7 @@ bool ipinwithdrawal(u_int16_t address_family, BGPDUMP_IP_ADDRESS& ip, BGPDUMP_EN
 void finalize_box(summarydata &sd,
                   int tot_as_path_len,
                   int max_as_path_len,
-                  vector<struct_BGPDUMP_ENTRY>& bgp_entries,
+                  vector<struct_BGPDUMP_ENTRY*>& bgp_entries,
                   set<vector<uint32_t>>& unique_as_paths,
                   int bgp_size_tot,
                   time_t box_begin_time,
@@ -270,12 +270,12 @@ void usage() {
 
  void process_dups_edit_dists(summarydata& d) {
      for ( int i = 0; i < d.bgp_entries.size(); i++ ) {
-         for ( int j = 0; j < d.bgp_entries[i].body.zebra_message.announce_count; j++ ) {
+         for ( int j = 0; j < d.bgp_entries[i]->body.zebra_message.announce_count; j++ ) {
              for ( int k = i+1; k < d.bgp_entries.size(); k++ ) {
-                 if ( ipinannoucement(d.bgp_entries[i].body.zebra_message.address_family,
-                                      d.bgp_entries[i].body.zebra_message.announce[j].address,
+                 if ( ipinannoucement(d.bgp_entries[i]->body.zebra_message.address_family,
+                                      d.bgp_entries[i]->body.zebra_message.announce[j].address,
                                       d.bgp_entries[k]) ) {
-                     if (aspath_equal(d.bgp_entries[i].attr->aspath, d.bgp_entries[k].attr->aspath) ) {
+                     if (aspath_equal(d.bgp_entries[i]->attr->aspath, d.bgp_entries[k]->attr->aspath) ) {
                          d.duplicate_announcements++;
                      } else {
                          d.implicit_withdrawls++;
@@ -283,12 +283,12 @@ void usage() {
                  }
              }
          }
-         for ( int j = 0; j < d.bgp_entries[i].body.zebra_message.withdraw_count; j++ ) {
+         for ( int j = 0; j < d.bgp_entries[i]->body.zebra_message.withdraw_count; j++ ) {
              for ( int k = i+1; k < d.bgp_entries.size(); k++ ) {
-                 if ( ipinwithdrawal(d.bgp_entries[i].body.zebra_message.address_family,
-                                     d.bgp_entries[i].body.zebra_message.withdraw[j].address,
+                 if ( ipinwithdrawal(d.bgp_entries[i]->body.zebra_message.address_family,
+                                     d.bgp_entries[i]->body.zebra_message.withdraw[j].address,
                                      d.bgp_entries[k]) ) {
-                     if (aspath_equal(d.bgp_entries[i].attr->aspath, d.bgp_entries[k].attr->aspath) ) {
+                     if (aspath_equal(d.bgp_entries[i]->attr->aspath, d.bgp_entries[k]->attr->aspath) ) {
                          d.duplicate_withdrawls++;
                      }
                  }
@@ -375,7 +375,10 @@ int main(int argc, char *argv[]) {
     // Get the files to be processed from the directory and sort them into lexicographic (chronological) order.
     vector<string> files_to_process;
     if ( ! global_opts.filemode ) {
-        string dirpath = std::filesystem::path(global_opts.workdir + "/" + global_opts.source + "/" + global_opts.collector + "/" + global_opts.wholedate);
+        string dirpath = std::filesystem::path(global_opts.workdir + "/" +
+                                                   global_opts.source + "/" +
+                                                   global_opts.collector + "/" +
+                                                   global_opts.wholedate);
         if ( ! std::filesystem::is_directory(dirpath) ) {
             cout << "No directory of data at \'" << "\'." << endl;
             usage();
@@ -391,7 +394,7 @@ int main(int argc, char *argv[]) {
     BGPDUMP *bgpdumphandle;
     BGPDUMP_ENTRY *e;
 
-    vector<BGPDUMP_ENTRY> bgp_entries;
+    vector<BGPDUMP_ENTRY*> bgp_entries;
     set<vector<uint32_t>> unique_as_paths;
     vector<summarydata> data;
     bool initial_startup = true;
@@ -409,7 +412,7 @@ int main(int argc, char *argv[]) {
 
         bgpdumphandle = bgpdump_open_dump(filename.c_str());
         if (bgpdumphandle == NULL) {
-            cout << "Error cannot open bgpdumphandle" << endl;
+            cout << "Error cannot open bgpdump file: " << filename.c_str() << endl;
             return -1;
         }
 
@@ -460,7 +463,7 @@ int main(int argc, char *argv[]) {
                 }
 
                 if (e->body.zebra_message.type == BGP_MSG_UPDATE) {
-                    bgp_entries.push_back(*e);
+                    bgp_entries.push_back(e);
                     box.count++;
                     string as_path_str(e->attr->aspath != NULL ? e->attr->aspath->str : "");
                     box.updates++;

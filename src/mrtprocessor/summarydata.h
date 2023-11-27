@@ -20,7 +20,7 @@ class summarydata {
 
 public:
     time_t begin;
-    std::vector<BGPDUMP_ENTRY> bgp_entries;
+    std::vector<BGPDUMP_ENTRY*> bgp_entries;
     std::set<std::vector<uint32_t>> unique_as_paths;
     int count;
     int count_aspaths;
