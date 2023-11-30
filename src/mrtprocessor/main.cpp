@@ -24,62 +24,62 @@ void validate(vector<summarydata>& data) {
     for ( auto d : data ) {
         time_t box_begin = d.begin;
         for ( auto bgp : d.bgp_entries ) {
-            if ( bgp->time - box_begin >= 60 ) {
-                cout << "BOX has entries out of time period!" << endl;
+            if ( bgp->time - box_begin > 60 ) {
+                cout << "BOX has entries out of time period!, begin=" << box_begin << " update time=" << bgp->time << " delay=" << bgp->time - box_begin << endl;
             }
         }
     }
 }
 
-void handle_announce_withdrawal(BGPDUMP_ENTRY *e, summarydata& box) {
+void handle_announce_withdrawal(BGPDUMP_ENTRY *e, summarydata* box) {
     bool is_announce {false};
     bool is_widthdrawl {false};
 
     if (e->body.zebra_message.announce_count > 0 ) {
         is_announce = true;
-        box.announced_prefixes += e->body.zebra_message.announce_count;
+        box->announced_prefixes += e->body.zebra_message.announce_count;
     }
     if (e->body.zebra_message.withdraw_count > 0) {
         is_widthdrawl = true;
-        box.withdrawn_prefixes += e->body.zebra_message.withdraw_count;
+        box->withdrawn_prefixes += e->body.zebra_message.withdraw_count;
 
     }
     if (e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST] &&
         e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->prefix_count ) {
         is_widthdrawl = true;
-        box.withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->prefix_count;
+        box->withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->prefix_count;
     }
     if (e->attr->mp_info->withdraw[AFI_IP][SAFI_MULTICAST] &&
         e->attr->mp_info->withdraw[AFI_IP][SAFI_MULTICAST]->prefix_count ) {
         is_widthdrawl = true;
-        box.withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->prefix_count;
+        box->withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->prefix_count;
     }
     if (e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST] &&
         e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->prefix_count ) {
         is_widthdrawl = true;
-        box.withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->prefix_count;
+        box->withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->prefix_count;
     }
     if (e->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST] &&
         e->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST]->prefix_count ) {
         is_widthdrawl = true;
-        box.withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST]->prefix_count;
+        box->withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST]->prefix_count;
     }
     if (e->attr->mp_info->withdraw[AFI_IP6][SAFI_MULTICAST] &&
         e->attr->mp_info->withdraw[AFI_IP6][SAFI_MULTICAST]->prefix_count ) {
         is_widthdrawl = true;
-        box.withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP6][SAFI_MULTICAST]->prefix_count;
+        box->withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP6][SAFI_MULTICAST]->prefix_count;
     }
     if (e->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST_MULTICAST] &&
         e->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST_MULTICAST]->prefix_count ) {
         is_widthdrawl = true;
-        box.withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST_MULTICAST]->prefix_count;
+        box->withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST_MULTICAST]->prefix_count;
     }
 
     if ( is_announce ) {
-        box.announcements++;
+        box->announcements++;
     }
     if ( is_widthdrawl ) {
-        box.withdrawls++;
+        box->withdrawls++;
     }
 }
 
@@ -171,8 +171,8 @@ bool ipequal(u_int16_t address_family, BGPDUMP_IP_ADDRESS& a, BGPDUMP_IP_ADDRESS
         }
         case AFI_IP6: { //IPv6
             bool result = true;
-            for (int i = 0; i < 4; i++) {
-                result &= (a.v6_addr.__u6_addr.__u6_addr32[i] == b.v6_addr.__u6_addr.__u6_addr32[i]);
+            for (int i = 0; i < 16; i++) {
+                result &= (a.v6_addr.s6_addr[i] == b.v6_addr.s6_addr[i]);
             }
             return result;
             break;
@@ -210,7 +210,7 @@ bool ipinwithdrawal(u_int16_t address_family, BGPDUMP_IP_ADDRESS& ip, BGPDUMP_EN
     return false;
 }
 
-void finalize_box(summarydata &sd,
+void finalize_box(summarydata* sd,
                   int tot_as_path_len,
                   int max_as_path_len,
                   vector<struct_BGPDUMP_ENTRY*>& bgp_entries,
@@ -219,11 +219,11 @@ void finalize_box(summarydata &sd,
                   time_t box_begin_time,
                   int max_unique_as_path) {
 
-    sd.avg_aspath_length = sd.count_aspaths != 0 ? (double)tot_as_path_len / (double)sd.count_aspaths : 0;
-    sd.max_aspath_length = max_as_path_len;
-    sd.bgp_entries = bgp_entries;
-    sd.unique_as_paths = unique_as_paths;
-    sd.avgsize = sd.updates != 0 ? bgp_size_tot / sd.updates : 0;
+    sd->avg_aspath_length = sd->count_aspaths != 0 ? (double)tot_as_path_len / (double)sd->count_aspaths : 0;
+    sd->max_aspath_length = max_as_path_len;
+    sd->bgp_entries = bgp_entries;
+    sd->unique_as_paths = unique_as_paths;
+    sd->avgsize = sd->updates != 0 ? bgp_size_tot / sd->updates : 0;
     bgp_size_tot = 0;
     process_unique_paths(sd);
     bgp_entries.clear();
@@ -268,34 +268,34 @@ void usage() {
     exit(-1);
  }
 
- void process_dups_edit_dists(summarydata& d) {
-     for ( int i = 0; i < d.bgp_entries.size(); i++ ) {
-         for ( int j = 0; j < d.bgp_entries[i]->body.zebra_message.announce_count; j++ ) {
-             for ( int k = i+1; k < d.bgp_entries.size(); k++ ) {
-                 if ( ipinannoucement(d.bgp_entries[i]->body.zebra_message.address_family,
-                                      d.bgp_entries[i]->body.zebra_message.announce[j].address,
-                                      d.bgp_entries[k]) ) {
-                     if (aspath_equal(d.bgp_entries[i]->attr->aspath, d.bgp_entries[k]->attr->aspath) ) {
-                         d.duplicate_announcements++;
+ void process_dups_edit_dists(summarydata* box) {
+     for ( int i = 0; i < box->bgp_entries.size(); i++ ) {
+         for ( int j = 0; j < box->bgp_entries[i]->body.zebra_message.announce_count; j++ ) {
+             for ( int k = i+1; k < box->bgp_entries.size(); k++ ) {
+                 if ( ipinannoucement(box->bgp_entries[i]->body.zebra_message.address_family,
+                                      box->bgp_entries[i]->body.zebra_message.announce[j].address,
+                                      box->bgp_entries[k]) ) {
+                     if (aspath_equal(box->bgp_entries[i]->attr->aspath, box->bgp_entries[k]->attr->aspath) ) {
+                         box->duplicate_announcements++;
                      } else {
-                         d.implicit_withdrawls++;
+                         box->implicit_withdrawls++;
                      }
                  }
              }
          }
-         for ( int j = 0; j < d.bgp_entries[i]->body.zebra_message.withdraw_count; j++ ) {
-             for ( int k = i+1; k < d.bgp_entries.size(); k++ ) {
-                 if ( ipinwithdrawal(d.bgp_entries[i]->body.zebra_message.address_family,
-                                     d.bgp_entries[i]->body.zebra_message.withdraw[j].address,
-                                     d.bgp_entries[k]) ) {
-                     if (aspath_equal(d.bgp_entries[i]->attr->aspath, d.bgp_entries[k]->attr->aspath) ) {
-                         d.duplicate_withdrawls++;
+         for ( int j = 0; j < box->bgp_entries[i]->body.zebra_message.withdraw_count; j++ ) {
+             for ( int k = i+1; k < box->bgp_entries.size(); k++ ) {
+                 if ( ipinwithdrawal(box->bgp_entries[i]->body.zebra_message.address_family,
+                                     box->bgp_entries[i]->body.zebra_message.withdraw[j].address,
+                                     box->bgp_entries[k]) ) {
+                     if (aspath_equal(box->bgp_entries[i]->attr->aspath, box->bgp_entries[k]->attr->aspath) ) {
+                         box->duplicate_withdrawls++;
                      }
                  }
              }
          }
      }
-     vector<vector<uint32_t>> unique_paths_v(d.unique_as_paths.begin(),d.unique_as_paths.end());
+     vector<vector<uint32_t>> unique_paths_v(box->unique_as_paths.begin(), box->unique_as_paths.end());
      int32_t unique_paths = unique_paths_v.size();
      int max_edit_distance = 0;
      int tot_edit_distance = 0;
@@ -310,8 +310,13 @@ void usage() {
              }
          }
      }
-     d.max_path_edit_distance = max_edit_distance;
-     d.avg_path_edit_distance = ceil((double)tot_edit_distance / (double)count);
+     box->max_path_edit_distance = max_edit_distance;
+     box->avg_path_edit_distance = ceil((double)tot_edit_distance / (double)count);
+     int entries_size = box->bgp_entries.size();
+     for ( int i = 0; i < entries_size; i++ ) {
+         bgpdump_free_mem(box->bgp_entries[i]);
+     }
+     box->bgp_entries.clear();
 }
 
 
@@ -391,15 +396,16 @@ int main(int argc, char *argv[]) {
         files_to_process = args;
     }
 
+    BS::thread_pool pool;
     BGPDUMP *bgpdumphandle;
     BGPDUMP_ENTRY *e;
 
     vector<BGPDUMP_ENTRY*> bgp_entries;
     set<vector<uint32_t>> unique_as_paths;
-    vector<summarydata> data;
+    vector<summarydata*> data;
     bool initial_startup = true;
     time_t box_begin_time;
-    summarydata box;
+    summarydata* box;
 
     vector<uint32_t> as_path;
     int tot_as_path_len;
@@ -429,7 +435,7 @@ int main(int argc, char *argv[]) {
                     firsttime->tm_sec = 0;
                     box_begin_time = timegm(firsttime);
 
-                    box.reset();
+                    box = new summarydata();
                     tot_as_path_len = 0;
                     max_as_path_len = 0;
                     tot_unique_as_path = 0;
@@ -438,7 +444,7 @@ int main(int argc, char *argv[]) {
                     as_path.clear();
                     unique_as_paths.clear();
 
-                    box.begin = box_begin_time;
+                    box->begin = box_begin_time;
 
                     initial_startup = false;
                 }
@@ -446,11 +452,19 @@ int main(int argc, char *argv[]) {
                 while(  e->time >= box_begin_time + 60  ) {
                     finalize_box(box, tot_as_path_len, max_as_path_len, bgp_entries, unique_as_paths, bgp_size_tot,
                                  box_begin_time, max_unique_as_path);
+
+                    int index = data.size();
                     data.push_back(box);
+
+                    if ( global_opts.run_parallel ) {
+                        pool.push_task(process_dups_edit_dists, box);
+                    } else {
+                        process_dups_edit_dists(box);
+                    }
 
                     box_begin_time += 60;
 
-                    box.reset();
+                    box = new summarydata();
                     tot_as_path_len = 0;
                     max_as_path_len = 0;
                     tot_unique_as_path = 0;
@@ -459,20 +473,20 @@ int main(int argc, char *argv[]) {
                     as_path.clear();
                     unique_as_paths.clear();
 
-                    box.begin = box_begin_time;
+                    box->begin = box_begin_time;
                 }
 
                 if (e->body.zebra_message.type == BGP_MSG_UPDATE) {
                     bgp_entries.push_back(e);
-                    box.count++;
+                    box->count++;
                     string as_path_str(e->attr->aspath != NULL ? e->attr->aspath->str : "");
-                    box.updates++;
+                    box->updates++;
                     bgp_size_tot += e->length;
 
                     handle_announce_withdrawal(e, box);
 
                     if (e->attr->aspath) {
-                        box.count_aspaths++;
+                        box->count_aspaths++;
                         as_path = path_to_vector(e->attr->aspath->str);
                         tot_as_path_len += e->attr->aspath->count;
                         unique_as_paths.insert(path_to_vector(e->attr->aspath->str));
@@ -483,13 +497,13 @@ int main(int argc, char *argv[]) {
 
                     switch (e->attr->origin) {
                         case 0:
-                            box.igps++;
+                            box->igps++;
                             break;
                         case 1:
-                            box.egps++;
+                            box->egps++;
                             break;
                         case 2:
-                            box.incompletes++;
+                            box->incompletes++;
                             break;
 //                        default:
 //                            cout << "ERROR - unknown ORIGIN value (0=IGP, 1=EGP, 2=INCOMPLETE) was "
@@ -498,15 +512,15 @@ int main(int argc, char *argv[]) {
                 }
 
                 if (e->body.zebra_message.type == BGP_MSG_KEEPALIVE) {
-                    box.keepalives++;
+                    box->keepalives++;
                 }
 
                 if (e->body.zebra_message.type == BGP_MSG_NOTIFY) {
-                    box.notifications++;
+                    box->notifications++;
                 }
 
                 if (e->body.zebra_message.type == BGP_MSG_OPEN) {
-                    box.opens++;
+                    box->opens++;
                 }
             }
         }
@@ -515,42 +529,36 @@ int main(int argc, char *argv[]) {
 
     // Push back the final box, after all the files have been read/closed.
     finalize_box(box, tot_as_path_len, max_as_path_len, bgp_entries, unique_as_paths, bgp_size_tot, box_begin_time, max_unique_as_path);
+    process_dups_edit_dists(box);
     data.push_back(box);
 
-    time_t basetime = data[0].begin;
+    time_t basetime = data[0]->begin;
 
-    BS::thread_pool pool;
-    int cnt = data.size();
-    for ( auto d = data.begin(); d != data.end(); d++ ) {
-        if ( global_opts.run_parallel ) {
-            pool.push_task(process_dups_edit_dists, ref(*d));
-        } else {
-            process_dups_edit_dists(*d);
-        }
-    }
+//    validate(data);
 
     if ( global_opts.run_parallel ) {
         pool.wait_for_tasks();
     }
 
-    validate(data);
-
-    for ( summarydata &d : data) {
-        time_t t = d.begin - basetime;
+    for ( summarydata* d : data) {
+        time_t t = d->begin - basetime;
 
         const int bufsz = 128;
         char buf[bufsz];
-        snprintf(buf, bufsz, "%.1f", (double) (d.updates / 60.0) );
+        snprintf(buf, bufsz, "%.1f", (double) (d->updates / 60.0) );
 
-        int hour = t / 3600;
-        int min = (t % 3600) / 60;
-        int sec = t % 60;
+        struct tm *firsttime;
+        firsttime = gmtime(&(d->begin));
+
+        int hour = firsttime->tm_hour;
+        int min = firsttime->tm_min;
+        int sec = firsttime->tm_sec;
 
         auto filchar = cout.fill();
         auto width = cout.width();
 
         if ( global_opts.posix_timestamps ) {
-            output << d.begin << " ";
+            output << d->begin << " ";
         }
         output << setw(2) << setfill('0') << hour
                << setw(2) << setfill('0') << min << " "
@@ -558,32 +566,32 @@ int main(int argc, char *argv[]) {
                << setw(2) << setfill('0') << min << " "
                << setw(2) << setfill('0') << sec << " ";
         output << setw(width) << setfill(filchar)
-               << d.announcements << " "             // column 5
-               << d.withdrawls << " "                // 6
-               << d.announced_prefixes << " "        // 7
-               << d.withdrawn_prefixes << " "        // 8
-               << ceil(d.avg_aspath_length) << " "   // 9
-               << d.max_aspath_length << " "         // 10
-               << ceil(d.avg_unique_aspath) << " "         // 11 ***
-               << d.duplicate_announcements << " "   // 12
-               << d.implicit_withdrawls << " "       // 13
-               << d.duplicate_withdrawls << " "      // 14
-               << d.max_path_edit_distance << " "    // 15 ***
+               << d->announcements << " "             // column 5
+               << d->withdrawls << " "                // 6
+               << d->announced_prefixes << " "        // 7
+               << d->withdrawn_prefixes << " "        // 8
+               << ceil(d->avg_aspath_length) << " "   // 9
+               << d->max_aspath_length << " "         // 10
+               << ceil(d->avg_unique_aspath) << " "         // 11 ***
+               << d->duplicate_announcements << " "   // 12
+               << d->implicit_withdrawls << " "       // 13
+               << d->duplicate_withdrawls << " "      // 14
+               << d->max_path_edit_distance << " "    // 15 ***
                << buf << " "                         // 16
-               << d.avg_path_edit_distance << " ";   // 17 ***
+               << d->avg_path_edit_distance << " ";   // 17 ***
 
         for ( int i = 11; i < 21; i++ ) {
-            output << ( (d.max_aspath_length == i) ? "1" : "0" ) << " ";
+            output << ( (d->max_aspath_length == i) ? "1" : "0" ) << " ";
         }
 
         for ( int i = 7; i < 17; i++ ) {
-            output << ( (d.max_path_edit_distance == i) ? "1" : "0" ) << " ";
+            output << ( (d->max_path_edit_distance == i) ? "1" : "0" ) << " ";
         }
 
-        output << d.igps << " "                      // 38
-               << d.egps << " "                      // 39
-               << d.incompletes << " "               // 40
-               << d.avgsize << endl;                 // 41
+        output << d->igps << " "                      // 38
+               << d->egps << " "                      // 39
+               << d->incompletes << " "               // 40
+               << d->avgsize << endl;                 // 41
     }
 
     return 0;

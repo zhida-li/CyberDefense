@@ -7,6 +7,10 @@
 
 using namespace std;
 
+summarydata::summarydata() {
+    reset();
+}
+
 void summarydata::reset() {
     begin = 0;
     count = 0;
@@ -40,11 +44,11 @@ void summarydata::reset() {
 }
 
 
-void process_unique_paths(summarydata &sd) {
+void process_unique_paths(summarydata* sd) {
     int max = 0;
     int tot = 0;
     int count = 0;
-    for ( const vector<uint32_t> p : sd.unique_as_paths ) {
+    for ( const vector<uint32_t> p : sd->unique_as_paths ) {
         int cursize = p.size();
         if ( cursize > max ) {
             max = cursize;
@@ -52,6 +56,6 @@ void process_unique_paths(summarydata &sd) {
         tot += cursize;
         count++;
     }
-    sd.max_unique_aspath = max;
-    sd.avg_unique_aspath = sd.unique_as_paths.size() != 0 ? ((double) tot / (double) sd.unique_as_paths.size()) : 0;
+    sd->max_unique_aspath = max;
+    sd->avg_unique_aspath = sd->unique_as_paths.size() != 0 ? ((double) tot / (double) sd->unique_as_paths.size()) : 0;
 }

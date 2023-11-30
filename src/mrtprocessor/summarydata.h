@@ -50,10 +50,11 @@ public:
     int avgsize;
 
 public:
+    summarydata();
     void reset();
 };
 
-void process_unique_paths(summarydata &sd);
+void process_unique_paths(summarydata* sd);
 
 
 #endif //MRTPROCESSOR_SUMMARYDATA_H
