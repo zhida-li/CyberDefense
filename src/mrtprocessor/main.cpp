@@ -53,12 +53,12 @@ void handle_announce_withdrawal(BGPDUMP_ENTRY *e, summarydata* box) {
     if (e->attr->mp_info->withdraw[AFI_IP][SAFI_MULTICAST] &&
         e->attr->mp_info->withdraw[AFI_IP][SAFI_MULTICAST]->prefix_count ) {
         is_widthdrawl = true;
-        box->withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->prefix_count;
+        box->withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP][SAFI_MULTICAST]->prefix_count;
     }
     if (e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST] &&
         e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->prefix_count ) {
         is_widthdrawl = true;
-        box->withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->prefix_count;
+        box->withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->prefix_count;
     }
     if (e->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST] &&
         e->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST]->prefix_count ) {
