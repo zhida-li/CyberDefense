@@ -12,6 +12,7 @@
 
 #include "summarydata.h"
 #include "BS_thread_pool.hpp"
+#include "multibgpreader.h"
 
 extern "C" {
 #include <bgpdump_lib.h>
@@ -414,121 +415,113 @@ int main(int argc, char *argv[]) {
     int max_unique_as_path;
     int bgp_size_tot;
 
-    for ( auto filename : files_to_process ) {
+    multibgpreader bgp_reader(files_to_process);
 
-        bgpdumphandle = bgpdump_open_dump(filename.c_str());
-        if (bgpdumphandle == NULL) {
-            cout << "Error cannot open bgpdump file: " << filename.c_str() << endl;
-            return -1;
-        }
+    while ((e = bgp_reader.get_next_record()) != NULL) {
 
-        while ((e = bgpdump_read_next(bgpdumphandle)) != NULL ) {
+        if (e->type == BGPDUMP_TYPE_ZEBRA_BGP &&
+            (e->subtype == BGPDUMP_SUBTYPE_ZEBRA_BGP_MESSAGE ||
+             e->subtype == BGPDUMP_SUBTYPE_ZEBRA_BGP_MESSAGE_AS4)) {
 
-            if (e->type == BGPDUMP_TYPE_ZEBRA_BGP &&
-                (e->subtype == BGPDUMP_SUBTYPE_ZEBRA_BGP_MESSAGE ||
-                 e->subtype == BGPDUMP_SUBTYPE_ZEBRA_BGP_MESSAGE_AS4)) {
+            if (initial_startup) {
 
-                if (initial_startup) {
+                struct tm *firsttime;
+                firsttime = gmtime(&(e->time));
+                firsttime->tm_sec = 0;
+                box_begin_time = timegm(firsttime);
 
-                    struct tm *firsttime;
-                    firsttime = gmtime(&(e->time));
-                    firsttime->tm_sec = 0;
-                    box_begin_time = timegm(firsttime);
+                box = new summarydata();
+                tot_as_path_len = 0;
+                max_as_path_len = 0;
+                tot_unique_as_path = 0;
+                max_unique_as_path = 0;
+                bgp_size_tot = 0;
+                as_path.clear();
+                unique_as_paths.clear();
 
-                    box = new summarydata();
-                    tot_as_path_len = 0;
-                    max_as_path_len = 0;
-                    tot_unique_as_path = 0;
-                    max_unique_as_path = 0;
-                    bgp_size_tot = 0;
-                    as_path.clear();
-                    unique_as_paths.clear();
+                box->begin = box_begin_time;
 
-                    box->begin = box_begin_time;
+                initial_startup = false;
+            }
 
-                    initial_startup = false;
+            while (e->time >= box_begin_time + 60) {
+                finalize_box(box, tot_as_path_len, max_as_path_len, bgp_entries, unique_as_paths, bgp_size_tot,
+                             box_begin_time, max_unique_as_path);
+
+                int index = data.size();
+                data.push_back(box);
+
+                if (global_opts.run_parallel) {
+                    pool.push_task(process_dups_edit_dists, box);
+                } else {
+                    process_dups_edit_dists(box);
                 }
 
-                while(  e->time >= box_begin_time + 60  ) {
-                    finalize_box(box, tot_as_path_len, max_as_path_len, bgp_entries, unique_as_paths, bgp_size_tot,
-                                 box_begin_time, max_unique_as_path);
+                box_begin_time += 60;
 
-                    int index = data.size();
-                    data.push_back(box);
+                box = new summarydata();
+                tot_as_path_len = 0;
+                max_as_path_len = 0;
+                tot_unique_as_path = 0;
+                max_unique_as_path = 0;
+                bgp_size_tot = 0;
+                as_path.clear();
+                unique_as_paths.clear();
 
-                    if ( global_opts.run_parallel ) {
-                        pool.push_task(process_dups_edit_dists, box);
-                    } else {
-                        process_dups_edit_dists(box);
+                box->begin = box_begin_time;
+            }
+
+            if (e->body.zebra_message.type == BGP_MSG_UPDATE) {
+                bgp_entries.push_back(e);
+                box->count++;
+                string as_path_str(e->attr->aspath != NULL ? e->attr->aspath->str : "");
+                box->updates++;
+                bgp_size_tot += e->length;
+
+                handle_announce_withdrawal(e, box);
+
+                if (e->attr->aspath) {
+                    box->count_aspaths++;
+                    as_path = path_to_vector(e->attr->aspath->str);
+                    tot_as_path_len += e->attr->aspath->count;
+                    unique_as_paths.insert(path_to_vector(e->attr->aspath->str));
+                    if (as_path.size() > max_as_path_len) {
+                        max_as_path_len = as_path.size();
                     }
-
-                    box_begin_time += 60;
-
-                    box = new summarydata();
-                    tot_as_path_len = 0;
-                    max_as_path_len = 0;
-                    tot_unique_as_path = 0;
-                    max_unique_as_path = 0;
-                    bgp_size_tot = 0;
-                    as_path.clear();
-                    unique_as_paths.clear();
-
-                    box->begin = box_begin_time;
                 }
 
-                if (e->body.zebra_message.type == BGP_MSG_UPDATE) {
-                    bgp_entries.push_back(e);
-                    box->count++;
-                    string as_path_str(e->attr->aspath != NULL ? e->attr->aspath->str : "");
-                    box->updates++;
-                    bgp_size_tot += e->length;
-
-                    handle_announce_withdrawal(e, box);
-
-                    if (e->attr->aspath) {
-                        box->count_aspaths++;
-                        as_path = path_to_vector(e->attr->aspath->str);
-                        tot_as_path_len += e->attr->aspath->count;
-                        unique_as_paths.insert(path_to_vector(e->attr->aspath->str));
-                        if (as_path.size() > max_as_path_len) {
-                            max_as_path_len = as_path.size();
-                        }
-                    }
-
-                    switch (e->attr->origin) {
-                        case 0:
-                            box->igps++;
-                            break;
-                        case 1:
-                            box->egps++;
-                            break;
-                        case 2:
-                            box->incompletes++;
-                            break;
+                switch (e->attr->origin) {
+                    case 0:
+                        box->igps++;
+                        break;
+                    case 1:
+                        box->egps++;
+                        break;
+                    case 2:
+                        box->incompletes++;
+                        break;
 //                        default:
 //                            cout << "ERROR - unknown ORIGIN value (0=IGP, 1=EGP, 2=INCOMPLETE) was "
 //                                 << e->attr->origin << endl;
-                    }
-                }
-
-                if (e->body.zebra_message.type == BGP_MSG_KEEPALIVE) {
-                    box->keepalives++;
-                }
-
-                if (e->body.zebra_message.type == BGP_MSG_NOTIFY) {
-                    box->notifications++;
-                }
-
-                if (e->body.zebra_message.type == BGP_MSG_OPEN) {
-                    box->opens++;
                 }
             }
+
+            if (e->body.zebra_message.type == BGP_MSG_KEEPALIVE) {
+                box->keepalives++;
+            }
+
+            if (e->body.zebra_message.type == BGP_MSG_NOTIFY) {
+                box->notifications++;
+            }
+
+            if (e->body.zebra_message.type == BGP_MSG_OPEN) {
+                box->opens++;
+            }
         }
-        bgpdump_close_dump(bgpdumphandle);
     }
 
-    // Push back the final box, after all the files have been read/closed.
-    finalize_box(box, tot_as_path_len, max_as_path_len, bgp_entries, unique_as_paths, bgp_size_tot, box_begin_time, max_unique_as_path);
+    finalize_box(box, tot_as_path_len, max_as_path_len, bgp_entries, unique_as_paths, bgp_size_tot, box_begin_time,
+                 max_unique_as_path);
     process_dups_edit_dists(box);
     data.push_back(box);
 
