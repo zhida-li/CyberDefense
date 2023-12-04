@@ -5,7 +5,7 @@ __pycache__/
 
 
 # C extensions
-*.so
+**/*.so
 
 # Distribution / packaging
 .Python
@@ -138,3 +138,9 @@ src/CSharp_Tool_BGP/ConsoleApplication1/bin/Release/DUMP_featureselection.txt
 src/data_test/DUMP_out.txt
 src/STAT/sample.zip
 
+#*
+~*
+**/.cmake
+**/.ninja_*
+**/CMakeCache.txt
+**/CMakeFiles

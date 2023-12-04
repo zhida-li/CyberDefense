@@ -1,0 +1,4 @@
+
+gconfig = {
+    "workdir": ""
+}

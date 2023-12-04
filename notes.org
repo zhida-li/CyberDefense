@@ -1,0 +1,50 @@
+
+* headers
+  HoursMins Hours Mins Seconds Ann With APrefix WPrefix AvgPath MaxPath UniqAvgPag DupAnn ImpWith DupWith MaxEditDist AvgEditDist 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 IGP EGP Inc AvgSz
+  
+
+
+
+* stage 1  - download
+
+  - download file to ./src/data_ripe/DATE/updates.*.gz
+    (wget -e robots=off -r -np -nd -A 'data_file' data_link)
+  - rename to updates.*.Z
+  - run zebra to produce DUMP_<DATE>
+
+* stage 2 - feature extraction
+
+  - for each DUMP_<DATE> file
+      - move it into C# code (CSharp_Tool_BGP/ConsoleApplication/bin/Release/) as "DUMP"
+      - run the console app, it reads DUMP and produces DUMP_out.txt
+      - rename it DUMP_<DATE>_out.txt
+      - copy them to src/data_split
+
+* stage 3 - generate labels
+
+  - use src/data_split/DUMP_<DATE>_out.txt
+  - create src/STAT/labels_RIPE.csv
+
+* stage 4 - data partition
+
+  - use src/data_split/DUMP_<DATE>_out.txt
+  - create src/data_split/{train,test}_<CUT>_RIPE.csv
+  - create src/STAT/train_test_stat.txt
+
+* stage 5 - normalize train test
+
+  - use src/data_split/{train,test}_<CUT>_RIPE.csv
+  - create src/data_split/{train,test>_<CUT>_RIPE_n.csv
+
+* stage 6 - run
+
+  - use src/data_split/{train,test}_<CUT>_RIPE_n
+  - copy to src/RNN_Running_Code/RNN_Run/dataset
+  - rename to train.csv, test.csv
+  - in src/RNN_Running_Code run ./integrate_run.sh
+  - in src/RNN_Running_Code/Run run ./collect.sh
+  - cp res_acc res_run to ../data_representation
+  - in src/RNN_Running_Code/data_representation run TableGenerator.py
+    
+
+  
