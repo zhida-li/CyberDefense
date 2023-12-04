@@ -299,8 +299,8 @@ void usage() {
      vector<vector<uint32_t>> unique_paths_v(box->unique_as_paths.begin(), box->unique_as_paths.end());
      int32_t unique_paths = unique_paths_v.size();
      int max_edit_distance = 0;
-     int tot_edit_distance = 0;
-     int count = 0;
+     int64_t tot_edit_distance = 0;
+     int64_t count = 0;
      for ( int i = 0; i < unique_paths; i++ ) {
          for ( int j = i+1; j < unique_paths; j++ ) {
              count++;
@@ -312,7 +312,7 @@ void usage() {
          }
      }
      box->max_path_edit_distance = max_edit_distance;
-     box->avg_path_edit_distance = ceil((double)tot_edit_distance / (double)count);
+     box->avg_path_edit_distance = count != 0.0 ? ceil((double)tot_edit_distance / (double)count) : 0.0;
      int entries_size = box->bgp_entries.size();
      for ( int i = 0; i < entries_size; i++ ) {
          bgpdump_free_mem(box->bgp_entries[i]);

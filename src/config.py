@@ -1,5 +1,0 @@
-
-gconfig = {
-    "workdir" : ""
-}
-

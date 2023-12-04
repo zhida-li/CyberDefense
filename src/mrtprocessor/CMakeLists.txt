@@ -7,7 +7,7 @@ set(CMAKE_OSX_ARCHITECTURES "arm64")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-stack-check")
 
-include_directories("/Users/ballanty/.local/include")
+include_directories("$ENV{HOME}/.local/include")
 
 add_executable(mrtprocessor main.cpp
         summarydata.cpp
@@ -15,5 +15,9 @@ add_executable(mrtprocessor main.cpp
         BS_thread_pool.hpp
         multibgpreader.cpp
         multibgpreader.h)
-target_link_directories(mrtprocessor PUBLIC "/Users/ballanty/.local/lib")
-target_link_libraries(mrtprocessor "-lbgpdump" "-lbz2" "-lz")
+target_link_directories(mrtprocessor PUBLIC "$ENV{HOME}/.local/lib")
+if (APPLE)
+target_link_libraries(mrtprocessor -lbgpdump -lbz2 -lz)
+else()
+    target_link_libraries(mrtprocessor -lbgpdump -lbz2 -lz -lpthread)
+endif()

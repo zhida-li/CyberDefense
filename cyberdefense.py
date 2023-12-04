@@ -10,9 +10,7 @@ from label_generation import label_generator
 from data_partition import data_partition
 from data_process import normTrainTest
 from subprocess_cmd import subprocess_cmd
-import config
-
-
+import gconfig
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +34,7 @@ def configureCmdLineParser():
     download.add_argument('-c', '--collector',
                         help='Collector, default rrc04',
                         default='rrc04')
-    download.add_argument('-s', '--source', help)
+    download.add_argument('-s', '--source')
 
     features = subparser.add_parser('extract')
     features.add_argument('-b', '--begindate',
@@ -83,8 +81,8 @@ def main():
     cmd = cmdparser.parse_args()
 
     # Get logging up and running
-    config.gconfig['workdir'] = cmd.workdir
-    workdir = config.gconfig['workdir']
+    gconfig.gconfig['workdir'] = cmd.workdir
+    workdir = gconfig.gconfig['workdir']
     if os.path.exists(workdir):
         if not os.path.isdir(workdir):
             print('Error: working directory %s exists and is not a directory!' % workdir)
