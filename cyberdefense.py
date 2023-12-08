@@ -4,12 +4,15 @@ import os
 import sys
 import pickle
 
-from dataDownload import data_downloader_multi
+from datetime import date
+
+#from dataDownload import data_downloader_multi
 from featureExtraction import feature_extractor_multi
 from label_generation import label_generator
 from data_partition import data_partition
 from data_process import normTrainTest
 from subprocess_cmd import subprocess_cmd
+from download import RIPE
 import gconfig
 
 logger = logging.getLogger(__name__)
@@ -22,14 +25,14 @@ def configureCmdLineParser():
                        default='cyberdefense_work')
     cmdparser.add_argument('--loglevel',
                            help='Log level - one of: DEBUG, INFO, WARNING, ERROR, CRITICAL',
-                           default='WARNING')
+                           default='WARNING'),
 
     subparser = cmdparser.add_subparsers(dest='subcmd')
 
     download = subparser.add_parser('download')
-    download.add_argument('-b', '--begindate',
+    download.add_argument('-b', '--begindate', type=parse_date,
                           help='A begin date for download of data YYYYMMDD')
-    download.add_argument('-e','--enddate',
+    download.add_argument('-e','--enddate', type=parse_date,
                           help='An end date for download of data YYYYMMDD')
     download.add_argument('-c', '--collector',
                         help='Collector, default rrc04',
@@ -37,9 +40,9 @@ def configureCmdLineParser():
     download.add_argument('-s', '--source')
 
     features = subparser.add_parser('extract')
-    features.add_argument('-b', '--begindate',
+    features.add_argument('-b', '--begindate', type=parse_date,
                           help='A begin date for download of data YYYYMMDD')
-    features.add_argument('-e','--enddate',
+    features.add_argument('-e','--enddate', type=parse_date,
                           help='An end date for download of data YYYYMMDD')
 
     label = subparser.add_parser('labelgen')
@@ -64,6 +67,13 @@ def configureCmdLineParser():
 
 
     return cmdparser
+
+def parse_date(datestr):
+    if not (len(datestr) == 8 and len(datestr) == 8
+            and datestr.isnumeric() and datestr.isnumeric()):
+      raise ValueError('date not in YYYYMMDD form, did you including leading 0s?')
+    return( date(year=int(datestr[0:4]), month=int(datestr[4:6]), day=int(datestr[6:8]) ))
+
 
 loglevels = {
     'NOTSET' : logging.NOTSET,
@@ -106,9 +116,13 @@ def main():
         logger.info("Starting download (begindate = %s, enddate = %s, collector = %s)" % (
         cmd.begindate, cmd.enddate, cmd.collector))
 
+        downloader = RIPE(gconfig.param("workdir","./cyberdefense"))
+        downloader.download_days(cmd.collector, cmd.begindate, cmd.enddate)
+
         # PRECONDITIONS: none
 
-        data_downloader_multi(cmd.begindate, cmd.enddate, site, cmd.collector)
+        # TODO: Remove old downloader
+        #data_downloader_multi(cmd.begindate, cmd.enddate, site, cmd.collector)
 
     elif cmd.subcmd == 'extract':
         logger.info("Feature extraction (begindate = %s, enddate = %s)" % (cmd.begindate, cmd.enddate) )
