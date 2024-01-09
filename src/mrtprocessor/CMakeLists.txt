@@ -8,14 +8,17 @@ set(CMAKE_OSX_ARCHITECTURES "arm64")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-stack-check")
 
 include_directories("$ENV{HOME}/.local/include")
-include_directories("$ENV{HOME}/.local/lib")
 
 add_executable(mrtprocessor main.cpp
         summarydata.cpp
         summarydata.h
         BS_thread_pool.hpp
         multibgpreader.cpp
-        multibgpreader.h)
+        multibgpreader.h
+        filters.cpp
+        filters.h
+        util.cpp
+        util.h)
 target_link_directories(mrtprocessor PUBLIC "$ENV{HOME}/.local/lib")
 if (APPLE)
 target_link_libraries(mrtprocessor -lbgpdump -lbz2 -lz)

@@ -13,6 +13,8 @@
 #include "summarydata.h"
 #include "BS_thread_pool.hpp"
 #include "multibgpreader.h"
+#include "util.h"
+#include "filters.h"
 
 extern "C" {
 #include <bgpdump_lib.h>
@@ -108,21 +110,7 @@ ostream& operator<<(ostream&s, const set<vector<uint32_t>>& p) {
     return s;
 }
 
-vector<uint32_t> path_to_vector(string path) {
 
-    vector<uint32_t> res;
-    stringstream spath { path };
-    string s;
-
-    while( getline(spath, s, ' ') ) {
-        if ( s[0] == '{') {
-            s.erase(s.length()-1);
-            s.erase(0,1);
-        }
-        res.push_back(stoul(s));
-    }
-    return res;
-}
 
 int edit_distance(vector<uint32_t>& p1, vector<uint32_t>& p2) {
 
@@ -243,6 +231,7 @@ struct options {
     int year;
     int month;
     int day;
+    vector<uint32_t> asns;
 } global_opts { "cyberdefense",
                 "ripe",
                 "rrc04",
@@ -264,7 +253,9 @@ void usage() {
          <<  "           OUTPUT: path to output file (default: stdout)\n"
          <<  "           [-np]: run non-parallel\n"
          <<  "            -f: file mode, process the files list directly, in order\n"
-         <<  "            -T: output posix timestamps in feature data"
+         <<  "            -T: output posix timestamps in feature data\n"
+         <<  "            -asnfilt ASNLIST (ex 1232:2222:90:99942) only includes bgp messages that have an aspath\n"
+         <<  "                     that has at least one of the listed AS numbers."
          << endl;
     exit(-1);
  }
@@ -352,6 +343,10 @@ int main(int argc, char *argv[]) {
         } else if (*it == "-T") {
             it = args.erase(it);
             global_opts.posix_timestamps = true;
+        } else if (*it == "-asnfilt") {
+            it = args.erase(it);
+            global_opts.asns = asnlist_to_vec(*it);
+            it = args.erase(it);
         } else if ((*it).substr(0, 1) == "-") {
             cout << "Illegal option! \n\n" << endl;
             usage();
@@ -369,6 +364,12 @@ int main(int argc, char *argv[]) {
             cout << "It appears your date \'" << argv[0] << "\'is not formatted YYYYMMDD (example 20101102)\n" << endl;
             usage();
         }
+    }
+
+    vector<filter *> filters;
+    bool filtering = !global_opts.asns.empty();
+    if ( filtering ) {
+        filters.push_back(new asnfilter(global_opts.asns));
     }
 
     // If an output file is specified, make sure we output to it, otherwise it goes to stdout.
@@ -398,15 +399,15 @@ int main(int argc, char *argv[]) {
     }
 
     BS::thread_pool pool;
-    BGPDUMP *bgpdumphandle;
-    BGPDUMP_ENTRY *e;
+    BGPDUMP *bgpdumphandle { NULL };
+    BGPDUMP_ENTRY *e { NULL };
 
     vector<BGPDUMP_ENTRY*> bgp_entries;
     set<vector<uint32_t>> unique_as_paths;
-    vector<summarydata*> data;
+    vector<summarydata*> data { NULL };
     bool initial_startup = true;
     time_t box_begin_time;
-    summarydata* box;
+    summarydata* box { NULL };
 
     vector<uint32_t> as_path;
     int tot_as_path_len;
@@ -416,6 +417,9 @@ int main(int argc, char *argv[]) {
     int bgp_size_tot;
 
     multibgpreader bgp_reader(files_to_process);
+    if ( filtering ) {
+        bgp_reader.setfilters(filters);
+    }
 
     while ((e = bgp_reader.get_next_record()) != NULL) {
 
@@ -518,6 +522,13 @@ int main(int argc, char *argv[]) {
                 box->opens++;
             }
         }
+    }
+
+    // The only way box == NULL is if no box ever got created.  That happens when no
+    // results are returned from the reading/filtering process.
+    if ( box == NULL ) {
+        cout << "There were no bgp packets to process.  Perhaps none passed the filter" << endl;
+        exit(0);
     }
 
     finalize_box(box, tot_as_path_len, max_as_path_len, bgp_entries, unique_as_paths, bgp_size_tot, box_begin_time,
