@@ -347,6 +347,9 @@ int main(int argc, char *argv[]) {
             it = args.erase(it);
             global_opts.asns = asnlist_to_vec(*it);
             it = args.erase(it);
+        } else if (*it == "-h" || *it == "--help") {
+            it = args.erase(it);
+            usage();
         } else if ((*it).substr(0, 1) == "-") {
             cout << "Illegal option! \n\n" << endl;
             usage();
