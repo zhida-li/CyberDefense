@@ -4,6 +4,7 @@
 
 #include "filters.h"
 #include "util.h"
+#include <algorithm>
 
 bool asnfilter::filt(BGPDUMP_ENTRY* bgp) {
     std::vector<uint32_t> aspath;
