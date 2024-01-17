@@ -143,7 +143,7 @@ def main():
             outfile = f"{workdir}/{ymd}_features.txt"
 
             cmdstr = f"export DYLD_LIBRARY_PATH=/Users/ballanty/.local/lib; " \
-                + f"./src/mrtprocessor/mrtprocessor " \
+                + f"./src/mrtprocessor/cmake-build-debug/mrtprocessor " \
                 + f"-d {workdir} -s {source} -c {cmd.collector} {ymd} " \
                 + f"-o {outfile}"
 
