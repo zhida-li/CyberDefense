@@ -45,7 +45,6 @@ void handle_announce_withdrawal(BGPDUMP_ENTRY *e, summarydata* box) {
     if (e->body.zebra_message.withdraw_count > 0) {
         is_widthdrawl = true;
         box->withdrawn_prefixes += e->body.zebra_message.withdraw_count;
-
     }
     if (e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST] &&
         e->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->prefix_count ) {
@@ -110,36 +109,6 @@ ostream& operator<<(ostream&s, const set<vector<uint32_t>>& p) {
     return s;
 }
 
-
-
-int edit_distance(vector<uint32_t>& p1, vector<uint32_t>& p2) {
-
-    int p1_size = p1.size();
-    int p2_size = p2.size();
-    int d[p1_size+1][p2_size+1];
-    int subst_cost = 0;
-
-    for ( int i = 0; i < p1_size+1; i++ ) {
-        d[i][0] = i;
-    }
-
-    for (int j = 1; j < p2_size+1; j++ ) {
-        d[0][j] = j;
-    }
-
-    for (int j = 1; j < p2_size+1; j++ ) {
-        for ( int i = 1; i < p1_size+1; i++ ) {
-            if ( p1[i-1] == p2[j-1] ) {
-                subst_cost = 0;
-            } else {
-                subst_cost = 1;
-            }
-            d[i][j] =  min( d[i - 1][j] + 1, min(d[i][j - 1] + 1, d[i - 1][j - 1] + subst_cost) );
-        }
-    }
-
-    return d[p1_size][p2_size];
-}
 
 bool aspath_equal(struct aspath *a, struct aspath *b) {
     if ( a == NULL ) {
@@ -232,6 +201,7 @@ struct options {
     int month;
     int day;
     vector<uint32_t> asns;
+    vector<nlriv4> nlriv4s;
 } global_opts { "cyberdefense",
                 "ripe",
                 "rrc04",
@@ -347,6 +317,10 @@ int main(int argc, char *argv[]) {
             it = args.erase(it);
             global_opts.asns = asnlist_to_vec(*it);
             it = args.erase(it);
+        } else if (*it == "-nlriv4filt") {
+            it = args.erase(it);
+            global_opts.nlriv4s = nlriv4list_to_vec(*it);
+            it = args.erase(it);
         } else if ((*it).substr(0, 1) == "-") {
             cout << "Illegal option! \n\n" << endl;
             usage();
@@ -367,10 +341,14 @@ int main(int argc, char *argv[]) {
     }
 
     vector<filter *> filters;
-    bool filtering = !global_opts.asns.empty();
-    if ( filtering ) {
+    if ( !global_opts.asns.empty() ) {
         filters.push_back(new asnfilter(global_opts.asns));
     }
+    if ( !global_opts.nlriv4s.empty() ) {
+        filters.push_back(new nlriv4filter(global_opts.nlriv4s));
+    }
+    bool filtering = !filters.empty();
+
 
     // If an output file is specified, make sure we output to it, otherwise it goes to stdout.
     ofstream fileout;
@@ -404,7 +382,7 @@ int main(int argc, char *argv[]) {
 
     vector<BGPDUMP_ENTRY*> bgp_entries;
     set<vector<uint32_t>> unique_as_paths;
-    vector<summarydata*> data { NULL };
+    vector<summarydata*> data;
     bool initial_startup = true;
     time_t box_begin_time;
     summarydata* box { NULL };

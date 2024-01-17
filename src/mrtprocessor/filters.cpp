@@ -20,3 +20,73 @@ bool asnfilter::filt(BGPDUMP_ENTRY* bgp) {
     }
     return false;
 }
+
+bool nlriv4filter::search_nlri(struct in_addr addr, uint32_t len) {
+    for ( auto nlri : nlris ) {
+        if ( addr.s_addr == nlri.get_addr().s_addr && len == nlri.get_len() ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool nlriv4filter::filt(BGPDUMP_ENTRY *bgp) {
+
+    for ( int i = 0; i < bgp->body.zebra_message.announce_count; i++ ) {
+        if (search_nlri(bgp->body.zebra_message.announce[i].address.v4_addr,
+                        bgp->body.zebra_message.announce[i].len))
+            return true;
+    }
+    for ( int i = 0; i < bgp->body.zebra_message.withdraw_count; i++ ) {
+        if (search_nlri(bgp->body.zebra_message.withdraw[i].address.v4_addr,
+                        bgp->body.zebra_message.withdraw[i].len))
+            return true;
+    }
+    if ( ! bgp->attr ) {
+        return false;
+    }
+    if (bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST]) {
+        for (int i = 0; i < bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST]->prefix_count; i++) {
+            if (search_nlri(bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST]->nlri->address.v4_addr,
+                            bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST]->nlri->len))
+                return true;
+        }
+    }
+    if (bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]) {
+        for ( int i = 0; i < bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->prefix_count; i++ ) {
+            if (search_nlri(bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->nlri->address.v4_addr,
+                            bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->nlri->len) )
+                return true;
+        }
+    }
+    if (bgp->attr->mp_info->announce[AFI_IP][SAFI_MULTICAST]) {
+        for (int i = 0; i < bgp->attr->mp_info->announce[AFI_IP][SAFI_MULTICAST]->prefix_count; i++) {
+            if (search_nlri(bgp->attr->mp_info->announce[AFI_IP][SAFI_MULTICAST]->nlri->address.v4_addr,
+                            bgp->attr->mp_info->announce[AFI_IP][SAFI_MULTICAST]->nlri->len))
+                return true;
+        }
+    }
+    if (bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]) {
+        for ( int i = 0; i < bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->prefix_count; i++ ) {
+            if (search_nlri(bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri->address.v4_addr,
+                            bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri->len) )
+                return true;
+        }
+    }
+    if (bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST_MULTICAST]) {
+        for (int i = 0; i < bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST_MULTICAST]->prefix_count; i++) {
+            if (search_nlri(bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri->address.v4_addr,
+                            bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri->len))
+                return true;
+        }
+    }
+    if (bgp->attr->mp_info->withdraw[AFI_IP][SAFI_MULTICAST]) {
+        for ( int i = 0; i < bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->prefix_count; i++ ) {
+            if (search_nlri(bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri->address.v4_addr,
+                            bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri->len) )
+                return true;
+        }
+    }
+
+    return false;
+}

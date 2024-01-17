@@ -25,3 +25,5 @@ target_link_libraries(mrtprocessor -lbgpdump -lbz2 -lz)
 else()
     target_link_libraries(mrtprocessor -lbgpdump -lbz2 -lz -lpthread)
 endif()
+
+add_subdirectory(unit_tests)
