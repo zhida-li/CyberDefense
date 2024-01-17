@@ -221,6 +221,7 @@ void usage() {
          <<  "           DATA-SRC: ripe or routeviews (default ripe)\n"
          <<  "           DATA-COOLECTOR: specific collector (default rrc04)\n"
          <<  "           OUTPUT: path to output file (default: stdout)\n"
+         <<  "           [-h] [--help]: displays this help message\n"
          <<  "           [-np]: run non-parallel\n"
          <<  "            -f: file mode, process the files list directly, in order\n"
          <<  "            -T: output posix timestamps in feature data\n"
@@ -321,6 +322,9 @@ int main(int argc, char *argv[]) {
             it = args.erase(it);
             global_opts.nlriv4s = nlriv4list_to_vec(*it);
             it = args.erase(it);
+        } else if (*it == "-h" || *it == "--help") {
+            it = args.erase(it);
+            usage();
         } else if ((*it).substr(0, 1) == "-") {
             cout << "Illegal option! \n\n" << endl;
             usage();
