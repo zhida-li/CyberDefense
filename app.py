@@ -335,7 +335,10 @@ def post_data_clustering():
 """
 if __name__ == '__main__':
     socketio.run(app, debug=True)
-    # app.run(debug=True)
+
+    # Sometimes Flask notices the build/run process creates files and restarts itself.  If that
+    # hapens use the following instead of the "debug" version above.
+    # socketio.run(app, use_reloader=False)
 
 """
 use of app.run vs. socketio.run :

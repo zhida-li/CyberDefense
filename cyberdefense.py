@@ -4,7 +4,7 @@ import os
 import sys
 import pickle
 
-from datetime import date
+from datetime import date, timedelta
 
 #from dataDownload import data_downloader_multi
 from featureExtraction import feature_extractor_multi
@@ -16,6 +16,8 @@ from download import RIPE
 import gconfig
 
 logger = logging.getLogger(__name__)
+
+oneday = timedelta(days=1)
 
 def configureCmdLineParser():
     cmdparser = argparse.ArgumentParser(description='Command line CyberDefense')
@@ -44,6 +46,9 @@ def configureCmdLineParser():
                           help='A begin date for download of data YYYYMMDD')
     features.add_argument('-e','--enddate', type=parse_date,
                           help='An end date for download of data YYYYMMDD')
+    features.add_argument('-c', '--collector',
+                        help='Collector, default rrc04',
+                        default='rrc04')
 
     label = subparser.add_parser('labelgen')
     label.add_argument('--ab',
@@ -127,12 +132,36 @@ def main():
     elif cmd.subcmd == 'extract':
         logger.info("Feature extraction (begindate = %s, enddate = %s)" % (cmd.begindate, cmd.enddate) )
 
-        # PRECONDITIONS: zipped files exist for the interval specified
+        # run mrtprocessor -d {workdir} -s {src} -c {collector} YYYYMMDD -o {workdir}/YYYYMMDD.features.txt
+        #    - create links - foreach YYYYMMDD requested
 
-        output_file_list = feature_extractor_multi(cmd.begindate, cmd.enddate, site)
-        print("Generated files:\n", ' '.join([str(i) for i  in output_file_list]))
-        filelistfile = open(workdir + '/' + 'file_list', 'wb')
-        pickle.dump(output_file_list, filelistfile)
+        source = "ripe"  # TODO add selectability/routeviews
+        filelist = []
+        curdate = cmd.begindate
+        while curdate <= cmd.enddate:
+            ymd= f"{curdate.year}{curdate.month:0>2}{curdate.day:0>2}"
+            outfile = f"{workdir}/{ymd}_features.txt"
+
+            cmdstr = f"export DYLD_LIBRARY_PATH=/Users/ballanty/.local/lib; " \
+                + f"./src/mrtprocessor/cmake-build-debug/mrtprocessor " \
+                + f"-d {workdir} -s {source} -c {cmd.collector} {ymd} " \
+                + f"-o {outfile}"
+
+            subprocess_cmd(cmdstr)
+
+            # TODO: This is temporary while the program is under change.
+            #       This puts links into the program structure where the existing
+            #       code expects certain data files to exist.
+            #       -> remove when conversion is complete.
+            res = os.path.islink(f'src/data_split/DUMP_{ymd}_out.txt')
+            if res:
+                os.unlink(f'src/data_split/DUMP_{ymd}_out.txt')
+            os.symlink(f"../../{outfile}", f"src/data_split/DUMP_{ymd}_out.txt")
+            filelist.append(f"DUMP_{ymd}_out.txt")
+            curdate = curdate + oneday
+
+        filelistfile = open(f'{workdir}/file_list', 'wb')
+        pickle.dump(filelist, filelistfile)
         filelistfile.close()
 
     elif cmd.subcmd == 'labelgen':

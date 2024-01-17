@@ -529,6 +529,11 @@ int main(int argc, char *argv[]) {
     for ( summarydata* d : data) {
         time_t t = d->begin - basetime;
 
+        if ( t >= 86400 ) {
+            // don't output anything from the next "day"
+            continue;
+        }
+
         const int bufsz = 128;
         char buf[bufsz];
         snprintf(buf, bufsz, "%.1f", (double) (d->updates / 60.0) );
