@@ -226,7 +226,9 @@ void usage() {
          <<  "            -f: file mode, process the files list directly, in order\n"
          <<  "            -T: output posix timestamps in feature data\n"
          <<  "            -asnfilt ASNLIST (ex 1232:2222:90:99942) only includes bgp messages that have an aspath\n"
-         <<  "                     that has at least one of the listed AS numbers."
+         <<  "                     that has at least one of the listed AS numbers.\n"
+         <<  "            -nlriv4filt IPV4LIST (ex 1.178.112.0/20,37.122.158.0/23,45.147.64.0/22) only includes bgp messages that have an NLRI IPv4\n"
+         <<  "                     that has at least one of the listed IPv4 addresses."
          << endl;
     exit(-1);
  }
