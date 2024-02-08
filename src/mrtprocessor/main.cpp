@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include <semaphore>
 
 #include "summarydata.h"
 #include "BS_thread_pool.hpp"
@@ -22,6 +23,8 @@ extern "C" {
 }
 
 using namespace std;
+
+counting_semaphore<64> *maxwork;
 
 void validate(vector<summarydata>& data) {
     for ( auto d : data ) {
@@ -195,6 +198,7 @@ struct options {
     string wholedate;
     string output;
     bool run_parallel;
+    int  threads;
     bool filemode;
     bool posix_timestamps;
     int year;
@@ -208,6 +212,7 @@ struct options {
                 "2005.10.11",
                 "-",
                 true,
+                4,
                 false,
                 false,
                 2005,
@@ -223,6 +228,7 @@ void usage() {
          <<  "           OUTPUT: path to output file (default: stdout)\n"
          <<  "           [-h] [--help]: displays this help message\n"
          <<  "           [-np]: run non-parallel\n"
+         <<  "           [-p THREADS]: number of threads to run in parallel (default: 4)\n"
          <<  "            -f: file mode, process the files list directly, in order\n"
          <<  "            -T: output posix timestamps in feature data\n"
          <<  "            -asnfilt ASNLIST (ex 1232:2222:90:99942) only includes bgp messages that have an aspath\n"
@@ -280,6 +286,9 @@ void usage() {
          bgpdump_free_mem(box->bgp_entries[i]);
      }
      box->bgp_entries.clear();
+     if (global_opts.run_parallel) {
+         maxwork->release();
+     }
 }
 
 
@@ -308,6 +317,10 @@ int main(int argc, char *argv[]) {
         } else if (*it == "-np") {
             it = args.erase(it);
             global_opts.run_parallel = false;
+        } else if (*it == "-p") {
+            it = args.erase(it);
+            global_opts.threads = stoi(*it);
+            it = args.erase(it);
         } else if (*it == "-f") {
             it = args.erase(it);
             global_opts.filemode = true;
@@ -380,7 +393,8 @@ int main(int argc, char *argv[]) {
         files_to_process = args;
     }
 
-    BS::thread_pool pool;
+    maxwork = new counting_semaphore<64>(global_opts.threads+2);
+    BS::thread_pool pool(global_opts.threads);
     BGPDUMP *bgpdumphandle { NULL };
     BGPDUMP_ENTRY *e { NULL };
 
@@ -434,10 +448,11 @@ int main(int argc, char *argv[]) {
                 finalize_box(box, tot_as_path_len, max_as_path_len, bgp_entries, unique_as_paths, bgp_size_tot,
                              box_begin_time, max_unique_as_path);
 
-                int index = data.size();
+                // int index = data.size();
                 data.push_back(box);
 
                 if (global_opts.run_parallel) {
+                    maxwork->acquire();
                     pool.push_task(process_dups_edit_dists, box);
                 } else {
                     process_dups_edit_dists(box);
