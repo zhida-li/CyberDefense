@@ -16,15 +16,6 @@ multibgpreader::multibgpreader(std::vector<std::string> files) :
     }
 }
 
-bool multibgpreader::runfilter(BGPDUMP_ENTRY* e) {
-    for ( auto f : filts ) {
-        if ( f->filt(e)) {
-            return true;
-        }
-    }
-    return false;
-}
-
 BGPDUMP_ENTRY *multibgpreader::get_next_record() {
     if ( current_file == NULL ) {
         current_file = bgpdump_open_dump(files[0].c_str());
@@ -34,20 +25,18 @@ BGPDUMP_ENTRY *multibgpreader::get_next_record() {
         }
     }
     BGPDUMP_ENTRY* result;
-    do {
-        while ((result = bgpdump_read_next(current_file)) == NULL &&
-               files.size() > 0) {
-            bgpdump_close_dump(current_file);
-            files.erase(files.begin());
-            if (files.empty()) {
-                return NULL;
-            }
-            current_file = bgpdump_open_dump(files[0].c_str());
-            if (current_file == NULL) {
-                std::cout << "Cannot read file: " << files[0] << std::endl;
-                exit(-1);
-            }
+    while ((result = bgpdump_read_next(current_file)) == NULL &&
+           files.size() > 0) {
+        bgpdump_close_dump(current_file);
+        files.erase(files.begin());
+        if (files.empty()) {
+            return NULL;
         }
-    } while ( filtering && ! runfilter(result) );
+        current_file = bgpdump_open_dump(files[0].c_str());
+        if (current_file == NULL) {
+            std::cout << "Cannot read file: " << files[0] << std::endl;
+            exit(-1);
+        }
+    }
     return result;
 }

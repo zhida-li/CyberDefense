@@ -415,9 +415,6 @@ int main(int argc, char *argv[]) {
     int bgp_size_tot;
 
     multibgpreader bgp_reader(files_to_process);
-    if ( filtering ) {
-        bgp_reader.setfilters(filters);
-    }
 
     while ((e = bgp_reader.get_next_record()) != NULL) {
 
@@ -472,6 +469,20 @@ int main(int argc, char *argv[]) {
                 unique_as_paths.clear();
 
                 box->begin = box_begin_time;
+            }
+
+            bool pass = false;
+            if ( filtering ) {
+                for (auto f: filters) {
+                    if (f->filt(e)) {
+                        pass = true;
+                        break;
+                    }
+                }
+
+                if (!pass) {
+                    continue;
+                }
             }
 
             if (e->body.zebra_message.type == BGP_MSG_UPDATE) {
