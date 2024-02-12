@@ -42,7 +42,12 @@
   - copy to src/RNN_Running_Code/RNN_Run/dataset
   - rename to train.csv, test.csv
   - in src/RNN_Running_Code run ./integrate_run.sh
+     - changes to each sub-directory that contains a save_memory_run.sh and runs it
+       (probably just RNN_Run)
+       - sets up a number of directories of python code to run (gru_Klayer_batchM...) and
+	 runs thme    
   - in src/RNN_Running_Code/Run run ./collect.sh
+     - copies *_accurancy.txt and *_runtime.txt to directories res_acc and res_run resp.
   - cp res_acc res_run to ../data_representation
   - in src/RNN_Running_Code/data_representation run TableGenerator.py
     

@@ -144,3 +144,5 @@ src/STAT/sample.zip
 **/.ninja_*
 **/CMakeCache.txt
 **/CMakeFiles
+
+**/cyberdefense_work
