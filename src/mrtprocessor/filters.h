@@ -6,6 +6,7 @@
 #define MRTPROCESSOR_FILTERS_H
 
 #include <vector>
+#include <algorithm>
 
 extern "C" {
 #include <bgpdump_lib.h>
@@ -44,6 +45,37 @@ private:
 
 public:
     nlriv4filter(std::vector<nlriv4> nlris) : nlris{nlris} {};
+    virtual bool filt(BGPDUMP_ENTRY *bgp);
+};
+
+class nlriv6 {
+private:
+    struct in6_addr addr;
+    uint32_t len;
+public:
+    nlriv6(struct in6_addr addr, uint32_t len): addr{addr}, len{len} {};
+    bool operator==(nlriv6 &other) {
+        if ( len != other.get_len() ) {
+            return false;
+        }
+        for ( int i = 0; i < 16; i++ ) {
+            if ( addr.__u6_addr.__u6_addr8[i] != other.get_addr().__u6_addr.__u6_addr8[i] ) {
+                return false;
+            }
+        }
+        return true;
+    }
+    struct in6_addr get_addr() { return addr;}
+    uint32_t get_len() { return len;}
+};
+
+class nlriv6filter : public filter {
+private:
+    std::vector<nlriv6> nlris;
+    bool search_nlri(struct in6_addr addr, uint32_t len);
+
+public:
+    nlriv6filter(std::vector<nlriv6> nlris) : nlris{nlris} {};
     virtual bool filt(BGPDUMP_ENTRY *bgp);
 };
 

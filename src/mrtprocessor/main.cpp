@@ -17,14 +17,28 @@
 #include "util.h"
 #include "filters.h"
 
+#include <plog/Log.h>
+#include <plog/Initializers/RollingFileInitializer.h>
+
 extern "C" {
 #include <bgpdump_lib.h>
 #include <netinet/in.h>
+#include <time.h>
 }
 
 using namespace std;
 
 counting_semaphore<64> *maxwork;
+
+ostream& operator<<(ostream& os, BGPDUMP_ENTRY* e) {
+    struct tm date;
+    gmtime_r(&(e->time), &date);
+    char buf[64];
+    strftime(buf,63,"%FT%T",&date);
+    os << "BGP Filtered in at " << buf << "=(" << e->time << ") as path = " <<
+               (e->attr->aspath != NULL ?  e->attr->aspath->str : "no-path");
+    return os;
+}
 
 void validate(vector<summarydata>& data) {
     for ( auto d : data ) {
@@ -78,6 +92,37 @@ void handle_announce_withdrawal(BGPDUMP_ENTRY *e, summarydata* box) {
         e->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST_MULTICAST]->prefix_count ) {
         is_widthdrawl = true;
         box->withdrawn_prefixes += e->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST_MULTICAST]->prefix_count;
+    }
+
+    if (e->attr->mp_info->announce[AFI_IP][SAFI_UNICAST] &&
+        e->attr->mp_info->announce[AFI_IP][SAFI_UNICAST]->prefix_count ) {
+        is_announce = true;
+        box->announced_prefixes += e->attr->mp_info->announce[AFI_IP][SAFI_UNICAST]->prefix_count;
+    }
+    if (e->attr->mp_info->announce[AFI_IP][SAFI_MULTICAST] &&
+        e->attr->mp_info->announce[AFI_IP][SAFI_MULTICAST]->prefix_count ) {
+        is_announce = true;
+        box->announced_prefixes += e->attr->mp_info->announce[AFI_IP][SAFI_MULTICAST]->prefix_count;
+    }
+    if (e->attr->mp_info->announce[AFI_IP][SAFI_UNICAST_MULTICAST] &&
+        e->attr->mp_info->announce[AFI_IP][SAFI_UNICAST_MULTICAST]->prefix_count ) {
+        is_announce = true;
+        box->announced_prefixes += e->attr->mp_info->announce[AFI_IP][SAFI_UNICAST_MULTICAST]->prefix_count;
+    }
+    if (e->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST] &&
+        e->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST]->prefix_count ) {
+        is_announce = true;
+        box->announced_prefixes += e->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST]->prefix_count;
+    }
+    if (e->attr->mp_info->announce[AFI_IP6][SAFI_MULTICAST] &&
+        e->attr->mp_info->announce[AFI_IP6][SAFI_MULTICAST]->prefix_count ) {
+        is_announce = true;
+        box->announced_prefixes += e->attr->mp_info->announce[AFI_IP6][SAFI_MULTICAST]->prefix_count;
+    }
+    if (e->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST_MULTICAST] &&
+        e->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST_MULTICAST]->prefix_count ) {
+        is_announce = true;
+        box->announced_prefixes += e->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST_MULTICAST]->prefix_count;
     }
 
     if ( is_announce ) {
@@ -201,12 +246,14 @@ struct options {
     int  threads;
     bool filemode;
     bool posix_timestamps;
+    int loglevel;
     int year;
     int month;
     int day;
     vector<uint32_t> asns;
     vector<nlriv4> nlriv4s;
-} global_opts { "cyberdefense",
+    vector<nlriv6> nlriv6s;
+} global_opts { "cyberdefense_work",
                 "ripe",
                 "rrc04",
                 "2005.10.11",
@@ -215,6 +262,7 @@ struct options {
                 4,
                 false,
                 false,
+                0,
                 2005,
                 10,
                 11};
@@ -337,6 +385,13 @@ int main(int argc, char *argv[]) {
             it = args.erase(it);
             global_opts.nlriv4s = nlriv4list_to_vec(*it);
             it = args.erase(it);
+        } else if (*it == "-nlriv6filt") {
+            it = args.erase(it);
+            global_opts.nlriv6s = nlriv6list_to_vec(*it);
+            it = args.erase(it);
+        } else if ( it->find("-v") == 0 ) {
+            global_opts.loglevel = it->length();
+            it = args.erase(it);
         } else if (*it == "-h" || *it == "--help") {
             it = args.erase(it);
             usage();
@@ -347,6 +402,29 @@ int main(int argc, char *argv[]) {
             ++it;
         }
     }
+
+    // Setup logging
+    plog::Severity loglevel;
+    switch ( global_opts.loglevel ) {
+        case 0:
+            loglevel = plog::error;
+            break;
+        case 2:
+            loglevel = plog::warning;
+            break;
+        case 3:
+            loglevel = plog::info;
+            break;
+        case 4:
+            loglevel = plog::debug;
+            break;
+        default:
+            loglevel = plog::error;
+            break;
+    }
+    plog::init(loglevel, (global_opts.workdir + "/mrtprocessor.log").c_str());
+    PLOGD << "Startup...";
+
     if (! global_opts.filemode ) {
         global_opts.wholedate = args[0];
         global_opts.year = stoi(global_opts.wholedate.substr(0, 4));
@@ -365,6 +443,9 @@ int main(int argc, char *argv[]) {
     }
     if ( !global_opts.nlriv4s.empty() ) {
         filters.push_back(new nlriv4filter(global_opts.nlriv4s));
+    }
+    if ( !global_opts.nlriv6s.empty() ) {
+        filters.push_back(new nlriv6filter(global_opts.nlriv6s));
     }
     bool filtering = !filters.empty();
 
@@ -483,6 +564,7 @@ int main(int argc, char *argv[]) {
                 if (!pass) {
                     continue;
                 }
+                PLOGD << e;
             }
 
             if (e->body.zebra_message.type == BGP_MSG_UPDATE) {

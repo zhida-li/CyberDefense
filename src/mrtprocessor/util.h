@@ -17,6 +17,7 @@ std::vector<nlriv4> nlriv4list_to_vec(std::string nlris);
 
 nlriv4 str_to_nlriv4(std::string nlri);
 std::vector<nlriv4> nlriv4list_to_vec(std::string nlris);
+std::vector<nlriv6> nlriv6list_to_vec(std::string nlris);
 
 int edit_distance(std::vector<uint32_t>& p1, std::vector<uint32_t>& p2);
 #endif //MRTPROCESSOR_UTIL_H

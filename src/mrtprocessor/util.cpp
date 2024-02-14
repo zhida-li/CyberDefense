@@ -57,6 +57,23 @@ nlriv4 str_to_nlriv4(string nlri) {
    return res;
 }
 
+nlriv6 str_to_nlriv6(string nlri) {
+    int slash_pos = nlri.find("/");
+    if ( slash_pos == slash_sep.npos ) {
+        // error
+    }
+    string addr_s = nlri.substr(0,slash_pos);
+    string len_s = nlri.substr(slash_pos+1);
+
+    struct in6_addr addr;
+    uint32_t len;
+
+    inet_pton(AF_INET6, addr_s.c_str(), &addr);
+    len = stoul(len_s);
+    nlriv6 res = nlriv6(addr, len);
+    return res;
+}
+
 vector<nlriv4> nlriv4list_to_vec(string nlris) {
     int cur_pos = 0;
     vector<nlriv4> res;
@@ -72,6 +89,24 @@ vector<nlriv4> nlriv4list_to_vec(string nlris) {
         } while( first_comma != comma_sep.npos );
     }
     res.push_back(str_to_nlriv4(nlris.substr(cur_pos)));
+    return res;
+}
+
+vector<nlriv6> nlriv6list_to_vec(string nlris) {
+    int cur_pos = 0;
+    vector<nlriv6> res;
+    int first_comma = nlris.find(",");
+    if ( first_comma == comma_sep.npos ) {
+        res.push_back(str_to_nlriv6(nlris));
+        return res;
+    } else {
+        do {
+            res.push_back(str_to_nlriv6(nlris.substr(cur_pos,first_comma - cur_pos)));
+            cur_pos = first_comma + 1;
+            first_comma = nlris.find(",", cur_pos);
+        } while( first_comma != comma_sep.npos );
+    }
+    res.push_back(str_to_nlriv6(nlris.substr(cur_pos)));
     return res;
 }
 

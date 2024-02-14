@@ -8,6 +8,7 @@ set(CMAKE_OSX_ARCHITECTURES "arm64")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-stack-check")
 
 include_directories("$ENV{HOME}/.local/include")
+include_directories("${PROJECT_SOURCE_DIR}/include")
 
 add_executable(mrtprocessor main.cpp
         summarydata.cpp

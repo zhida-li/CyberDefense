@@ -48,46 +48,106 @@ bool nlriv4filter::filt(BGPDUMP_ENTRY *bgp) {
     }
     if (bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST]) {
         for (int i = 0; i < bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST]->prefix_count; i++) {
-            if (search_nlri(bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST]->nlri->address.v4_addr,
-                            bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST]->nlri->len))
+            if (search_nlri(bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST]->nlri[i].address.v4_addr,
+                            bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST]->nlri[i].len))
                 return true;
         }
     }
     if (bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]) {
         for ( int i = 0; i < bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->prefix_count; i++ ) {
-            if (search_nlri(bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->nlri->address.v4_addr,
-                            bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->nlri->len) )
+            if (search_nlri(bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->nlri[i].address.v4_addr,
+                            bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST]->nlri[i].len) )
                 return true;
         }
     }
     if (bgp->attr->mp_info->announce[AFI_IP][SAFI_MULTICAST]) {
         for (int i = 0; i < bgp->attr->mp_info->announce[AFI_IP][SAFI_MULTICAST]->prefix_count; i++) {
-            if (search_nlri(bgp->attr->mp_info->announce[AFI_IP][SAFI_MULTICAST]->nlri->address.v4_addr,
-                            bgp->attr->mp_info->announce[AFI_IP][SAFI_MULTICAST]->nlri->len))
+            if (search_nlri(bgp->attr->mp_info->announce[AFI_IP][SAFI_MULTICAST]->nlri[i].address.v4_addr,
+                            bgp->attr->mp_info->announce[AFI_IP][SAFI_MULTICAST]->nlri[i].len))
                 return true;
         }
     }
-    if (bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]) {
-        for ( int i = 0; i < bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->prefix_count; i++ ) {
-            if (search_nlri(bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri->address.v4_addr,
-                            bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri->len) )
+    if (bgp->attr->mp_info->withdraw[AFI_IP][SAFI_MULTICAST]) {
+        for ( int i = 0; i < bgp->attr->mp_info->withdraw[AFI_IP][SAFI_MULTICAST]->prefix_count; i++ ) {
+            if (search_nlri(bgp->attr->mp_info->withdraw[AFI_IP][SAFI_MULTICAST]->nlri[i].address.v4_addr,
+                            bgp->attr->mp_info->withdraw[AFI_IP][SAFI_MULTICAST]->nlri[i].len) )
                 return true;
         }
     }
     if (bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST_MULTICAST]) {
         for (int i = 0; i < bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST_MULTICAST]->prefix_count; i++) {
-            if (search_nlri(bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri->address.v4_addr,
-                            bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri->len))
+            if (search_nlri(bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri[i].address.v4_addr,
+                            bgp->attr->mp_info->announce[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri[i].len))
                 return true;
         }
     }
-    if (bgp->attr->mp_info->withdraw[AFI_IP][SAFI_MULTICAST]) {
+    if (bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]) {
         for ( int i = 0; i < bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->prefix_count; i++ ) {
-            if (search_nlri(bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri->address.v4_addr,
-                            bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri->len) )
+            if (search_nlri(bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri[i].address.v4_addr,
+                            bgp->attr->mp_info->withdraw[AFI_IP][SAFI_UNICAST_MULTICAST]->nlri[i].len) )
                 return true;
         }
     }
+    return false;
+}
+
+bool nlriv6filter::search_nlri(struct in6_addr addr, uint32_t len) {
+    nlriv6 other(addr,len);
+    for ( auto nlri : nlris ) {
+        if ( nlri == other ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool nlriv6filter::filt(BGPDUMP_ENTRY *bgp) {
+    if (bgp->attr == NULL) {
+        return false;
+    }
+    if (bgp->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST]) {
+        for (int i = 0; i < bgp->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST]->prefix_count; i++) {
+            if (search_nlri(bgp->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST]->nlri[i].address.v6_addr,
+                            bgp->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST]->nlri[i].len))
+                return true;
+        }
+    }
+    if (bgp->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST]) {
+        for ( int i = 0; i < bgp->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST]->prefix_count; i++ ) {
+            if (search_nlri(bgp->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST]->nlri[i].address.v6_addr,
+                            bgp->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST]->nlri[i].len) )
+                return true;
+        }
+    }
+    if (bgp->attr->mp_info->announce[AFI_IP6][SAFI_MULTICAST]) {
+        for (int i = 0; i < bgp->attr->mp_info->announce[AFI_IP6][SAFI_MULTICAST]->prefix_count; i++) {
+            if (search_nlri(bgp->attr->mp_info->announce[AFI_IP6][SAFI_MULTICAST]->nlri[i].address.v6_addr,
+                            bgp->attr->mp_info->announce[AFI_IP6][SAFI_MULTICAST]->nlri[i].len))
+                return true;
+        }
+    }
+    if (bgp->attr->mp_info->withdraw[AFI_IP6][SAFI_MULTICAST]) {
+        for ( int i = 0; i < bgp->attr->mp_info->withdraw[AFI_IP6][SAFI_MULTICAST]->prefix_count; i++ ) {
+            if (search_nlri(bgp->attr->mp_info->withdraw[AFI_IP6][SAFI_MULTICAST]->nlri[i].address.v6_addr,
+                            bgp->attr->mp_info->withdraw[AFI_IP6][SAFI_MULTICAST]->nlri[i].len) )
+                return true;
+        }
+    }
+    if (bgp->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST_MULTICAST]) {
+        for (int i = 0; i < bgp->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST_MULTICAST]->prefix_count; i++) {
+            if (search_nlri(bgp->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST_MULTICAST]->nlri[i].address.v6_addr,
+                            bgp->attr->mp_info->announce[AFI_IP6][SAFI_UNICAST_MULTICAST]->nlri[i].len))
+                return true;
+        }
+    }
+    if (bgp->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST_MULTICAST]) {
+        for ( int i = 0; i < bgp->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST_MULTICAST]->prefix_count; i++ ) {
+            if (search_nlri(bgp->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST_MULTICAST]->nlri[i].address.v6_addr,
+                            bgp->attr->mp_info->withdraw[AFI_IP6][SAFI_UNICAST_MULTICAST]->nlri[i].len) )
+                return true;
+        }
+    }
+
 
     return false;
 }
