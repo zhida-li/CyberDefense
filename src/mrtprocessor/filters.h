@@ -59,7 +59,7 @@ public:
             return false;
         }
         for ( int i = 0; i < 16; i++ ) {
-            if ( addr.__u6_addr.__u6_addr8[i] != other.get_addr().__u6_addr.__u6_addr8[i] ) {
+            if ( addr.s6_addr[i] != other.get_addr().s6_addr[i] ) {
                 return false;
             }
         }
