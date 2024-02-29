@@ -279,10 +279,9 @@ void usage() {
          <<  "           [-p THREADS]: number of threads to run in parallel (default: 4)\n"
          <<  "            -f: file mode, process the files list directly, in order\n"
          <<  "            -T: output posix timestamps in feature data\n"
-         <<  "            -asnfilt ASNLIST (ex 1232:2222:90:99942) only includes bgp messages that have an aspath\n"
-         <<  "                     that has at least one of the listed AS numbers.\n"
-         <<  "            -nlriv4filt IPV4LIST (ex 1.178.112.0/20,37.122.158.0/23,45.147.64.0/22) only includes bgp messages that have an NLRI IPv4\n"
-         <<  "                     that has at least one of the listed IPv4 addresses."
+         <<  "            -asnfilt ASNLIST (ex 1232:2222:90:99942) only includes bgp messages that have on aspath at least one of the listed AS numbers.\n"
+         <<  "            -nlriv4filt IPV4LIST (ex 1.178.112.0/20,37.122.158.0/23,45.147.64.0/22) only includes bgp messages that cites at least one of the listed IPv4 prefixes.\n"
+         <<  "            -nlriv6filt IPV6LIST (ex 2a04:7740::/29,2a04:7800::/29,2a04:9100::/29) only includes bgp messages that cites at least one of the listed IPv6 prefixes.\n"
          << endl;
     exit(-1);
  }
