@@ -41,6 +41,9 @@ void summarydata::reset() {
     avgsize = 0;
     bgp_entries.clear();
     unique_as_paths.clear();
+    unfilt_count = 0;
+    unfilt_size = 0;
+    total_size = 0;
 }
 
 

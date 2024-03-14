@@ -48,6 +48,9 @@ public:
     int updates;
     int notifications;
     int avgsize;
+    int unfilt_count;
+    int unfilt_size;
+    int total_size;
 
 public:
     summarydata();

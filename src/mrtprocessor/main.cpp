@@ -221,7 +221,6 @@ void finalize_box(summarydata* sd,
                   int max_as_path_len,
                   vector<struct_BGPDUMP_ENTRY*>& bgp_entries,
                   set<vector<uint32_t>>& unique_as_paths,
-                  int bgp_size_tot,
                   time_t box_begin_time,
                   int max_unique_as_path) {
 
@@ -229,8 +228,7 @@ void finalize_box(summarydata* sd,
     sd->max_aspath_length = max_as_path_len;
     sd->bgp_entries = bgp_entries;
     sd->unique_as_paths = unique_as_paths;
-    sd->avgsize = sd->updates != 0 ? bgp_size_tot / sd->updates : 0;
-    bgp_size_tot = 0;
+    sd->avgsize = sd->updates != 0 ? sd->total_size / sd->updates : 0;
     process_unique_paths(sd);
     bgp_entries.clear();
     unique_as_paths.clear();
@@ -493,7 +491,6 @@ int main(int argc, char *argv[]) {
     int max_as_path_len;
     int tot_unique_as_path;
     int max_unique_as_path;
-    int bgp_size_tot;
 
     multibgpreader bgp_reader(files_to_process);
 
@@ -515,7 +512,6 @@ int main(int argc, char *argv[]) {
                 max_as_path_len = 0;
                 tot_unique_as_path = 0;
                 max_unique_as_path = 0;
-                bgp_size_tot = 0;
                 as_path.clear();
                 unique_as_paths.clear();
 
@@ -525,7 +521,7 @@ int main(int argc, char *argv[]) {
             }
 
             while (e->time >= box_begin_time + 60) {
-                finalize_box(box, tot_as_path_len, max_as_path_len, bgp_entries, unique_as_paths, bgp_size_tot,
+                finalize_box(box, tot_as_path_len, max_as_path_len, bgp_entries, unique_as_paths,
                              box_begin_time, max_unique_as_path);
 
                 // int index = data.size();
@@ -545,11 +541,16 @@ int main(int argc, char *argv[]) {
                 max_as_path_len = 0;
                 tot_unique_as_path = 0;
                 max_unique_as_path = 0;
-                bgp_size_tot = 0;
                 as_path.clear();
                 unique_as_paths.clear();
 
                 box->begin = box_begin_time;
+            }
+
+            // When filtering, keep track total number of messages and total size of them
+            if ( e->body.zebra_message.type == BGP_MSG_UPDATE ) {
+                box->unfilt_count++;
+                box->unfilt_size += e->length;
             }
 
             bool pass = false;
@@ -572,7 +573,7 @@ int main(int argc, char *argv[]) {
                 box->count++;
                 string as_path_str(e->attr->aspath != NULL ? e->attr->aspath->str : "");
                 box->updates++;
-                bgp_size_tot += e->length;
+                box->total_size += e->length;
 
                 handle_announce_withdrawal(e, box);
 
@@ -623,7 +624,7 @@ int main(int argc, char *argv[]) {
         exit(0);
     }
 
-    finalize_box(box, tot_as_path_len, max_as_path_len, bgp_entries, unique_as_paths, bgp_size_tot, box_begin_time,
+    finalize_box(box, tot_as_path_len, max_as_path_len, bgp_entries, unique_as_paths, box_begin_time,
                  max_unique_as_path);
     process_dups_edit_dists(box);
     data.push_back(box);
@@ -692,7 +693,11 @@ int main(int argc, char *argv[]) {
         output << d->igps << " "                      // 38
                << d->egps << " "                      // 39
                << d->incompletes << " "               // 40
-               << d->avgsize << endl;                 // 41
+               << d->avgsize << " "                   // 41
+               << d->unfilt_count << " "              // 42
+               << d->count << " "                     // 43
+               << d->unfilt_size << " "               // 44
+               << d->total_size << endl;
     }
 
     return 0;
